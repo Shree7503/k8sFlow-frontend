@@ -1,0 +1,367 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* K8sFlow Desktop Theme - Technical IDE Style */
+@theme {
+  /* Dark Theme (Default) */
+  --color-bg-dark: #1e1e1e;
+  --color-panel-dark: #252526;
+  --color-border-dark: #3e3e42;
+  --color-text-dark: #cccccc;
+  --color-text-muted-dark: #858585;
+  --color-hover-dark: #2a2d2e;
+  
+  /* Light Theme */
+  --color-bg-light: #ffffff;
+  --color-panel-light: #f3f3f3;
+  --color-border-light: #e5e5e5;
+  --color-text-light: #333333;
+  --color-text-muted-light: #6b6b6b;
+  --color-hover-light: #e8e8e8;
+  
+  /* Kubernetes Blue Accent */
+  --color-accent: #326CE5;
+  --color-accent-hover: #2457B5;
+  
+  /* Status Colors */
+  --color-success: #4caf50;
+  --color-error: #f44336;
+  --color-warning: #ff9800;
+  
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* Global Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background: var(--color-bg-dark);
+  color: var(--color-text-dark);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body.light-theme {
+  background: var(--color-bg-light);
+  color: var(--color-text-light);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Panel Styles */
+.panel {
+  background: var(--color-panel-dark);
+  border: 1px solid var(--color-border-dark);
+}
+
+.light-theme .panel {
+  background: var(--color-panel-light);
+  border-color: var(--color-border-light);
+}
+
+/* Button Styles */
+.btn-primary {
+  background: var(--color-accent);
+  color: white;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text-dark);
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--color-border-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.light-theme .btn-secondary {
+  color: var(--color-text-light);
+  border-color: var(--color-border-light);
+}
+
+.btn-secondary:hover {
+  background: var(--color-hover-dark);
+}
+
+.light-theme .btn-secondary:hover {
+  background: var(--color-hover-light);
+}
+
+/* Input Styles */
+.input-field {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 0.25rem;
+  color: var(--color-text-dark);
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.light-theme .input-field {
+  background: var(--color-bg-light);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.input-field::placeholder {
+  color: var(--color-text-muted-dark);
+}
+
+.light-theme .input-field::placeholder {
+  color: var(--color-text-muted-light);
+}
+
+/* Status Indicators */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-connected {
+  background: var(--color-success);
+}
+
+.status-disconnected {
+  background: var(--color-text-muted-dark);
+}
+
+.status-error {
+  background: var(--color-error);
+}
+
+/* Cluster Card */
+.cluster-card {
+  background: var(--color-panel-dark);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 0.25rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.light-theme .cluster-card {
+  background: var(--color-panel-light);
+  border-color: var(--color-border-light);
+}
+
+.cluster-card:hover {
+  border-color: var(--color-accent);
+  background: var(--color-hover-dark);
+}
+
+.light-theme .cluster-card:hover {
+  background: var(--color-hover-light);
+}
+
+/* Link Styles */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+
+.light-theme ::-webkit-scrollbar-track {
+  background: var(--color-bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-dark);
+  border-radius: 5px;
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  background: var(--color-border-light);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted-dark);
+}
+
+/* Monospace Text */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+/* ─── RBAC: Role Badges ──────────────────────────────────────── */
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.role-badge-sm {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+}
+
+.role-badge-md {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.role-viewer {
+  background: rgba(134, 142, 150, 0.15);
+  color: #868e96;
+  border: 1px solid rgba(134, 142, 150, 0.3);
+}
+
+.role-editor {
+  background: rgba(50, 108, 229, 0.15);
+  color: #5b9aff;
+  border: 1px solid rgba(50, 108, 229, 0.3);
+}
+
+.role-admin {
+  background: rgba(255, 183, 77, 0.15);
+  color: #ffb74d;
+  border: 1px solid rgba(255, 183, 77, 0.3);
+}
+
+.light-theme .role-viewer {
+  background: rgba(134, 142, 150, 0.1);
+  color: #6b7280;
+}
+
+.light-theme .role-editor {
+  background: rgba(50, 108, 229, 0.1);
+  color: #326CE5;
+}
+
+.light-theme .role-admin {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+/* ─── RBAC: Cluster Card Role Borders ────────────────────────── */
+
+.cluster-card-border-admin {
+  border-left: 3px solid #ffb74d;
+}
+
+.cluster-card-border-editor {
+  border-left: 3px solid var(--color-accent);
+}
+
+.cluster-card-border-viewer {
+  border-left: 3px solid var(--color-border-dark);
+}
+
+.light-theme .cluster-card-border-viewer {
+  border-left-color: var(--color-border-light);
+}
+
+/* ─── RBAC: Access Denied Page ───────────────────────────────── */
+
+.access-denied-card {
+  border-color: var(--color-error);
+  border-top: 3px solid var(--color-error);
+}
+
+.access-denied-icon {
+  color: var(--color-error);
+}
+
+/* ─── RBAC: Admin Panel ──────────────────────────────────────── */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.admin-table thead {
+  background: var(--color-bg-dark);
+}
+
+.light-theme .admin-table thead {
+  background: var(--color-bg-light);
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+}
+
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border-dark);
+}
+
+.light-theme .admin-table td {
+  border-top-color: var(--color-border-light);
+}
+
+.admin-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--color-hover-dark);
+}
+
+.light-theme .admin-table tbody tr:hover {
+  background: var(--color-hover-light);
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "k8sflow-frontend",
+  "outputfilename": "k8sflow-frontend",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "http://localhost:5173",
+  "author": {
+    "name": "Shreenath Kadam",
+    "email": "146519199+Shree7503@users.noreply.github.com"
+  }
+}
