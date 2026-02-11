@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import { Button } from '../components/ui/button';
 
@@ -22,6 +22,8 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
@@ -34,15 +36,11 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button asChild variant="secondary">
-            <Link to="/login">
-              Sign In
-            </Link>
+          <Button variant="secondary" onClick={() => navigate('/login')}>
+            Sign In
           </Button>
-          <Button asChild>
-            <Link to="/register">
-              Get Started
-            </Link>
+          <Button onClick={() => navigate('/register')}>
+            Get Started
           </Button>
         </div>
       </div>
@@ -66,15 +64,11 @@ export default function LandingPage() {
           </p>
           
           <div className="flex items-center justify-center gap-4">
-            <Button asChild size="lg">
-              <Link to="/register">
-                Get Started
-              </Link>
+            <Button size="lg" onClick={() => navigate('/register')}>
+              Get Started
             </Button>
-            <Button asChild variant="secondary" size="lg">
-              <Link to="/login">
-                Sign In
-              </Link>
+            <Button variant="secondary" size="lg" onClick={() => navigate('/login')}>
+              Sign In
             </Button>
           </div>
         </div>
