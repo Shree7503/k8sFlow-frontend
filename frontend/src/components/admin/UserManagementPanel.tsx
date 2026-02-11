@@ -4,6 +4,7 @@ import RoleBadge from '../RoleBadge';
 import type { ManagedUser, SystemRoleValue } from '../../types/rbac';
 import { parseErrorMessage } from '../../utils/errorHandler';
 import { Input } from '../ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 
 /**
  * Admin panel for managing users.
@@ -152,20 +153,20 @@ export default function UserManagementPanel() {
       )}
 
       <div className="panel overflow-hidden">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Joined</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="admin-table">
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {users.map((u) => (
-              <tr key={u.id}>
-                <td>
+              <TableRow key={u.id}>
+                <TableCell>
                   {editingUser === u.id ? (
                     <Input
                       type="text"
@@ -179,8 +180,8 @@ export default function UserManagementPanel() {
                   ) : (
                     <span className="font-medium">{u.name || '—'}</span>
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {editingUser === u.id ? (
                     <Input
                       type="email"
@@ -194,14 +195,14 @@ export default function UserManagementPanel() {
                   ) : (
                     <span className="font-mono text-xs opacity-70">{u.email}</span>
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   <RoleBadge role={u.role} />
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   <span className="text-xs opacity-50">{u.joined || '—'}</span>
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {editingUser === u.id ? (
                     <div className="flex gap-2">
                       <button
@@ -249,18 +250,18 @@ export default function UserManagementPanel() {
                       </button>
                     </div>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {users.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-center opacity-50 py-8">
+              <TableRow>
+                <TableCell colSpan={5} className="text-center opacity-50 py-8">
                   No users found
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
