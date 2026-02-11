@@ -1,4 +1,4 @@
-import { IconSettings, IconX } from 'tabler-icons-react';
+import { IconSettings, IconX } from '@tabler/icons-react';
 import { Card } from './ui/card';
 import RoleBadge from './RoleBadge';
 import type { SystemRoleValue } from '../types/rbac';

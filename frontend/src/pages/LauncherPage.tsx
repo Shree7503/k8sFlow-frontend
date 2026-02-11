@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconHome, IconUser, IconShield, IconSettings, IconBook, IconMoon, IconSun, IconLogout } from 'tabler-icons-react';
+import { IconHome, IconUser, IconShield, IconSettings, IconBook, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import ClusterCard from '../components/ClusterCard.tsx';
 import EmptyState from '../components/EmptyState.tsx';
