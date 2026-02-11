@@ -1,3 +1,4 @@
+import { Card } from './ui/card';
 import RoleBadge from './RoleBadge';
 import type { SystemRoleValue } from '../types/rbac';
 import { canModifyCluster, canAdminCluster } from '../utils/rbac';
@@ -41,7 +42,7 @@ export default function ClusterCard({
     : 'cluster-card-border-viewer';
 
   return (
-    <div className={`cluster-card ${borderClass}`}>
+    <Card className={`cluster-card ${borderClass}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -55,7 +56,7 @@ export default function ClusterCard({
         </div>
         <div className="flex gap-1">
           {status !== 'connected' && onConnect && (
-            <button 
+            <button
               onClick={onConnect}
               className="px-2 py-1 text-xs hover:bg-[var(--color-hover-dark)] rounded transition-colors"
               title="Connect"
@@ -64,7 +65,7 @@ export default function ClusterCard({
             </button>
           )}
           {onEdit && (
-            <button 
+            <button
               onClick={canEdit ? onEdit : undefined}
               disabled={!canEdit}
               className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -78,7 +79,7 @@ export default function ClusterCard({
             </button>
           )}
           {onDelete && (
-            <button 
+            <button
               onClick={canAdmin ? onDelete : undefined}
               disabled={!canAdmin}
               className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -93,16 +94,16 @@ export default function ClusterCard({
           )}
         </div>
       </div>
-      
+
       {lastConnected && (
         <p className="text-xs opacity-50">Last connected: {lastConnected}</p>
       )}
-      
+
       {status === 'error' && (
         <p className="text-xs text-[var(--color-error)] mt-2">
           Connection failed. Check your kubeconfig.
         </p>
       )}
-    </div>
+    </Card>
   );
 }

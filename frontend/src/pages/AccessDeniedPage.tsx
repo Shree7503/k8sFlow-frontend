@@ -3,6 +3,7 @@ import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import { useAuthStore } from '../store/store';
 import { getRoleName } from '../utils/roleMapper';
 import RoleBadge from '../components/RoleBadge';
+import { Button } from '../components/ui/button';
 
 export default function AccessDeniedPage() {
   const navigate = useNavigate();
@@ -53,18 +54,17 @@ export default function AccessDeniedPage() {
           </p>
 
           <div className="flex gap-3 justify-center">
-            <button
+            <Button
               onClick={() => navigate(-1)}
-              className="btn-secondary text-sm px-4 py-2"
+              variant="secondary"
             >
               ← Go Back
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => navigate('/launcher')}
-              className="btn-primary text-sm px-4 py-2"
             >
               Go to Launcher
-            </button>
+            </Button>
           </div>
         </div>
       </div>

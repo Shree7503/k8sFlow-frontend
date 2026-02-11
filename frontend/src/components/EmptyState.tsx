@@ -1,3 +1,5 @@
+import { Button } from './ui/button';
+
 interface EmptyStateProps {
   onAddCluster: () => void;
 }
@@ -16,9 +18,9 @@ export default function EmptyState({ onAddCluster }: EmptyStateProps) {
         Add your first Kubernetes cluster to start managing deployments and workflows.
       </p>
       
-      <button onClick={onAddCluster} className="btn-primary">
+      <Button onClick={onAddCluster}>
         + Add Cluster
-      </button>
+      </Button>
     </div>
   );
 }

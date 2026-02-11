@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { useAuthStore } from '../store/store';
 import { useRBACStore } from '../store/rbacStore';
 import { SystemRole } from '../types/rbac';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 
 export default function LauncherPage() {
@@ -140,19 +142,18 @@ export default function LauncherPage() {
         {/* Header */}
         <div className="panel border-b p-4 flex items-center justify-between">
           <div className="flex-1 max-w-md">
-            <input
+            <Input
               type="text"
               placeholder="Search clusters..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field w-full"
             />
           </div>
           {/* Add Cluster: only for Admin users */}
           <RoleGate minSystemRole={SystemRole.Admin}>
-            <button onClick={handleAddCluster} className="btn-primary ml-4">
+            <Button onClick={handleAddCluster} className="ml-4">
               + Add Cluster
-            </button>
+            </Button>
           </RoleGate>
         </div>
 

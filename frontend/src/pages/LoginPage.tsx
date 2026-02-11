@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axios/interceptor';
 import { parseErrorMessage, parseFieldErrors } from '../utils/errorHandler';
 import { useAuthStore, mapRole } from '../store/store';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -77,9 +79,9 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen flex items-center justify-center px-4 relative">
-      <button onClick={() => navigate('/')} className="btn-secondary absolute top-6 left-6 text-xs px-3 py-2">
+      <Button onClick={() => navigate('/')} variant="secondary" size="xs" className="absolute top-6 left-6">
         ← Back
-      </button>
+      </Button>
 
       <div className="w-full max-w-md">
 
@@ -106,12 +108,12 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Email</label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`input-field ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="you@example.com"
+                aria-invalid={!!errors.email}
               />
               {errors.email && <p className="mt-1.5 text-xs text-red-500">{errors.email}</p>}
             </div>
@@ -119,12 +121,13 @@ export default function LoginPage() {
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`input-field pr-10 ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
+                  aria-invalid={!!errors.password}
+                  className="pr-10"
                 />
                 <button
                   type="button"
@@ -145,9 +148,9 @@ export default function LoginPage() {
               <a href="#" className="opacity-60 hover:opacity-100">Forgot password?</a>
             </div>
 
-            <button type="submit" className="btn-primary w-full py-2.5">
+            <Button type="submit" className="w-full">
               Sign In
-            </button>
+            </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-[var(--color-border-dark)] text-center text-xs">

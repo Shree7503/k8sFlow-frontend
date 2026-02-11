@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import RoleGate from '../components/RoleGate';
 import { SystemRole } from '../types/rbac';
 import axiosInstance from '../axios/interceptor';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export default function CreateClusterPage() {
     const navigate = useNavigate();
@@ -44,9 +46,11 @@ export default function CreateClusterPage() {
             });
 
             navigate('/launcher');
-        } catch (err: any) {
+        } catch (err) {
             console.error('Failed to create cluster:', err);
-            setError(err.response?.data?.message || 'Failed to create cluster. Please try again.');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            setError(error.response?.data?.message || 'Failed to create cluster. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -83,10 +87,9 @@ export default function CreateClusterPage() {
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium mb-1 opacity-70">Cluster Name</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         required
-                                        className="input-field w-full"
                                         placeholder="e.g. production-us-east"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -97,7 +100,7 @@ export default function CreateClusterPage() {
                                     <label className="block text-sm font-medium mb-1 opacity-70">Provider</label>
                                     <select
                                         required
-                                        className="input-field w-full"
+                                        className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                                         value={formData.provider}
                                         onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
                                     >
@@ -113,7 +116,7 @@ export default function CreateClusterPage() {
                                 <div>
                                     <label className="block text-sm font-medium mb-1 opacity-70">Description</label>
                                     <textarea
-                                        className="input-field w-full h-24 resize-none"
+                                        className="flex min-h-[80px] w-full rounded border border-input bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none"
                                         placeholder="Optional description..."
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -146,20 +149,19 @@ export default function CreateClusterPage() {
                                 </div>
 
                                 <div className="flex items-center justify-end gap-3 pt-6">
-                                    <button
+                                    <Button
                                         type="button"
                                         onClick={() => navigate('/launcher')}
-                                        className="btn px-4 py-2 rounded text-sm hover:bg-[var(--bg-secondary)] transition-colors"
+                                        variant="secondary"
                                     >
                                         Cancel
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="btn-primary"
                                     >
                                         {loading ? 'Creating...' : 'Create Cluster'}
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                         </div>

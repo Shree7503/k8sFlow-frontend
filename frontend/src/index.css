@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 /* K8sFlow Desktop Theme - Technical IDE Style */
 @theme {
   /* Dark Theme (Default) */
@@ -10,7 +12,7 @@
   --color-text-dark: #cccccc;
   --color-text-muted-dark: #858585;
   --color-hover-dark: #2a2d2e;
-  
+
   /* Light Theme */
   --color-bg-light: #ffffff;
   --color-panel-light: #f3f3f3;
@@ -18,16 +20,16 @@
   --color-text-light: #333333;
   --color-text-muted-light: #6b6b6b;
   --color-hover-light: #e8e8e8;
-  
+
   /* Kubernetes Blue Accent */
   --color-accent: #326CE5;
   --color-accent-hover: #2457B5;
-  
+
   /* Status Colors */
   --color-success: #4caf50;
   --color-error: #f44336;
   --color-warning: #ff9800;
-  
+
   /* Fonts */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -73,80 +75,6 @@ body.light-theme {
   border-color: var(--color-border-light);
 }
 
-/* Button Styles */
-.btn-primary {
-  background: var(--color-accent);
-  color: white;
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.25rem;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.btn-primary:hover {
-  background: var(--color-accent-hover);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--color-text-dark);
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.25rem;
-  border: 1px solid var(--color-border-dark);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.light-theme .btn-secondary {
-  color: var(--color-text-light);
-  border-color: var(--color-border-light);
-}
-
-.btn-secondary:hover {
-  background: var(--color-hover-dark);
-}
-
-.light-theme .btn-secondary:hover {
-  background: var(--color-hover-light);
-}
-
-/* Input Styles */
-.input-field {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  background: var(--color-bg-dark);
-  border: 1px solid var(--color-border-dark);
-  border-radius: 0.25rem;
-  color: var(--color-text-dark);
-  font-size: 0.875rem;
-  transition: border-color 0.2s ease;
-  font-family: var(--font-sans);
-}
-
-.light-theme .input-field {
-  background: var(--color-bg-light);
-  border-color: var(--color-border-light);
-  color: var(--color-text-light);
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--color-accent);
-}
-
-.input-field::placeholder {
-  color: var(--color-text-muted-dark);
-}
-
-.light-theme .input-field::placeholder {
-  color: var(--color-text-muted-light);
-}
-
 /* Status Indicators */
 .status-dot {
   width: 8px;
@@ -169,17 +97,18 @@ body.light-theme {
 
 /* Cluster Card */
 .cluster-card {
-  background: var(--color-panel-dark);
-  border: 1px solid var(--color-border-dark);
-  border-radius: 0.25rem;
-  padding: 1rem;
+  background: var(--color-panel-dark) !important;
+  border: 1px solid var(--color-border-dark) !important;
+  border-radius: 0.25rem !important;
+  padding: 1rem !important;
+  gap: 0 !important;
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .light-theme .cluster-card {
-  background: var(--color-panel-light);
-  border-color: var(--color-border-light);
+  background: var(--color-panel-light) !important;
+  border-color: var(--color-border-light) !important;
 }
 
 .cluster-card:hover {
@@ -238,23 +167,23 @@ a:hover {
 /* ─── RBAC: Role Badges ──────────────────────────────────────── */
 
 .role-badge {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   font-weight: 600;
-  border-radius: 0.25rem;
+  border-radius: 0.25rem !important;
   letter-spacing: 0.025em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .role-badge-sm {
-  font-size: 0.625rem;
-  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem !important;
+  padding: 0.125rem 0.375rem !important;
 }
 
 .role-badge-md {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
 }
 
 .role-viewer {
@@ -323,21 +252,20 @@ a:hover {
 
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
   font-size: 0.875rem;
 }
 
-.admin-table thead {
-  background: var(--color-bg-dark);
+.admin-table [data-slot="table-header"] {
+  background: var(--color-bg-dark) !important;
 }
 
-.light-theme .admin-table thead {
-  background: var(--color-bg-light);
+.light-theme .admin-table [data-slot="table-header"] {
+  background: var(--color-bg-light) !important;
 }
 
-.admin-table th {
+.admin-table [data-slot="table-head"] {
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem !important;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -345,23 +273,143 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
-.admin-table td {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--color-border-dark);
+.admin-table [data-slot="table-cell"] {
+  padding: 0.75rem 1rem !important;
+  border-top: 1px solid var(--color-border-dark) !important;
 }
 
-.light-theme .admin-table td {
-  border-top-color: var(--color-border-light);
+.light-theme .admin-table [data-slot="table-cell"] {
+  border-top-color: var(--color-border-light) !important;
 }
 
-.admin-table tbody tr {
+.admin-table [data-slot="table-row"] {
   transition: background 0.15s ease;
 }
 
-.admin-table tbody tr:hover {
-  background: var(--color-hover-dark);
+.admin-table [data-slot="table-body"] [data-slot="table-row"]:hover {
+  background: var(--color-hover-dark) !important;
 }
 
-.light-theme .admin-table tbody tr:hover {
-  background: var(--color-hover-light);
+.light-theme .admin-table [data-slot="table-body"] [data-slot="table-row"]:hover {
+  background: var(--color-hover-light) !important;
+}
+
+@theme inline {
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
+  --radius-4xl: 1.5rem;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.25rem;
+  /* Light theme colors */
+  --background: #ffffff;
+  --foreground: #333333;
+  --card: #f3f3f3;
+  --card-foreground: #333333;
+  --popover: #ffffff;
+  --popover-foreground: #333333;
+  --primary: #326CE5;
+  --primary-foreground: #ffffff;
+  --secondary: #e5e5e5;
+  --secondary-foreground: #333333;
+  --muted: #e5e5e5;
+  --muted-foreground: #6b6b6b;
+  --accent: #326CE5;
+  --accent-foreground: #ffffff;
+  --destructive: #f44336;
+  --border: #e5e5e5;
+  --input: #ffffff;
+  --ring: #326CE5;
+  --chart-1: #326CE5;
+  --chart-2: #4caf50;
+  --chart-3: #ff9800;
+  --chart-4: #9c27b0;
+  --chart-5: #2196f3;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #333333;
+  --sidebar-primary: #326CE5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #326CE5;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #326CE5;
+}
+
+.dark {
+  --background: #1e1e1e;
+  --foreground: #cccccc;
+  --card: #252526;
+  --card-foreground: #cccccc;
+  --popover: #252526;
+  --popover-foreground: #cccccc;
+  --primary: #326CE5;
+  --primary-foreground: #ffffff;
+  --secondary: #3e3e42;
+  --secondary-foreground: #cccccc;
+  --muted: #3e3e42;
+  --muted-foreground: #858585;
+  --accent: #326CE5;
+  --accent-foreground: #ffffff;
+  --destructive: #f44336;
+  --border: #3e3e42;
+  --input: #1e1e1e;
+  --ring: #326CE5;
+  --chart-1: #326CE5;
+  --chart-2: #4caf50;
+  --chart-3: #ff9800;
+  --chart-4: #9c27b0;
+  --chart-5: #2196f3;
+  --sidebar: #252526;
+  --sidebar-foreground: #cccccc;
+  --sidebar-primary: #326CE5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #326CE5;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3e3e42;
+  --sidebar-ring: #326CE5;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

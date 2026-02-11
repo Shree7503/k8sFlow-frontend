@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAuthStore } from '../store/store';
 import UserManagementPanel from '../components/admin/UserManagementPanel';
 import ClusterAccessPanel from "../components/admin/ClusterAccessPanel";
+import { Button } from '../components/ui/button';
 
 type AdminTab = 'users' | 'clusters';
 
@@ -32,12 +33,14 @@ export default function AdminPage() {
     <div className="h-screen flex overflow-hidden">
       {/* Left Panel - Admin Navigation */}
       <div className="w-[300px] panel border-r flex flex-col p-6">
-        <button
+        <Button
           onClick={() => navigate('/launcher')}
-          className="btn-secondary mb-6 text-xs px-3 py-2 text-left"
+          variant="secondary"
+          size="xs"
+          className="mb-6 justify-start w-full"
         >
           ← Back to Launcher
-        </button>
+        </Button>
 
         <div className="flex items-center gap-3 mb-8">
           <img src={kubernetesLogo} alt="Kubernetes" className="w-10 h-10" />

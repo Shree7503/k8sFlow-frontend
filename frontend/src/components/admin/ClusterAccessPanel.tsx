@@ -4,6 +4,8 @@ import axiosInstance from '../../axios/interceptor';
 import { SystemRole } from '../../types/rbac';
 import type { SystemRoleValue, ClusterAccessAssignment } from '../../types/rbac';
 import { parseErrorMessage } from '../../utils/errorHandler';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 
 interface ClusterOption {
   id: string;
@@ -220,7 +222,7 @@ export default function ClusterAccessPanel() {
         <select
           value={filterUserId}
           onChange={(e) => setFilterUserId(e.target.value)}
-          className="input-field max-w-md"
+          className="flex h-9 max-w-md rounded border border-input bg-transparent px-3 py-1 text-sm transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
         >
           <option value="">— All users —</option>
           {knownUsers.map((u) => (
@@ -273,7 +275,7 @@ export default function ClusterAccessPanel() {
                         Number(e.target.value) as SystemRoleValue
                       )
                     }
-                    className="input-field text-xs py-1 px-2 w-28"
+                    className="flex h-8 w-28 rounded border border-input bg-transparent px-2 py-1 text-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                   >
                     <option value={SystemRole.Viewer}>Viewer</option>
                     <option value={SystemRole.Editor}>Editor</option>
@@ -311,12 +313,11 @@ export default function ClusterAccessPanel() {
             <label className="block text-xs font-medium opacity-70 mb-1">
               User ID
             </label>
-            <input
+            <Input
               type="text"
               value={newUserId}
               onChange={(e) => setNewUserId(e.target.value)}
               placeholder="Enter user UUID"
-              className="input-field"
             />
           </div>
           <div className="flex-1 min-w-[200px]">
@@ -326,7 +327,7 @@ export default function ClusterAccessPanel() {
             <select
               value={newClusterId}
               onChange={(e) => setNewClusterId(e.target.value)}
-              className="input-field"
+              className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
             >
               <option value="">— Select cluster —</option>
               {availableClusters.map((c) => (
@@ -345,20 +346,19 @@ export default function ClusterAccessPanel() {
               onChange={(e) =>
                 setNewRole(Number(e.target.value) as SystemRoleValue)
               }
-              className="input-field"
+              className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
             >
               <option value={SystemRole.Viewer}>Viewer</option>
               <option value={SystemRole.Editor}>Editor</option>
               <option value={SystemRole.Admin}>Admin</option>
             </select>
           </div>
-          <button
+          <Button
             onClick={handleAssign}
             disabled={!newUserId || !newClusterId || assignLoading}
-            className="btn-primary text-sm px-4 py-2 disabled:opacity-50"
           >
             {assignLoading ? 'Adding...' : 'Grant Access'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
