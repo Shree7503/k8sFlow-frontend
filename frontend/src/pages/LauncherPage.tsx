@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconHome, IconUser, IconShield, IconSettings, IconBook, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import ClusterCard from '../components/ClusterCard.tsx';
 import EmptyState from '../components/EmptyState.tsx';
@@ -92,30 +93,35 @@ export default function LauncherPage() {
           <div className="border-t border-[var(--color-border-dark)] pt-6 space-y-1">
             <button
               onClick={() => navigate('/')}
-              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors"
+              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2"
             >
-              🏠 Home
+              <IconHome size={16} />
+              Home
             </button>
             <button
               onClick={() => navigate('/account')}
-              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors"
+              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2"
             >
-              👤 Account
+              <IconUser size={16} />
+              Account
             </button>
             {/* Admin link: only visible to Admin users */}
             <RoleGate minSystemRole={SystemRole.Admin}>
               <button
                 onClick={() => navigate('/admin')}
-                className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors"
+                className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2"
               >
-                🛡️ Admin Panel
+                <IconShield size={16} />
+                Admin Panel
               </button>
             </RoleGate>
-            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors">
-              ⚙ Settings
+            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2">
+              <IconSettings size={16} />
+              Settings
             </button>
-            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors">
-              📚 Documentation
+            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2">
+              <IconBook size={16} />
+              Documentation
             </button>
           </div>
         </div>
@@ -125,14 +131,18 @@ export default function LauncherPage() {
             onClick={toggleTheme}
             className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center justify-between"
           >
-            <span>{theme === 'dark' ? '🌙' : '☀️'} Theme</span>
+            <span className="flex items-center gap-2">
+              {theme === 'dark' ? <IconMoon size={16} /> : <IconSun size={16} />}
+              Theme
+            </span>
             <span className="text-xs opacity-50">{theme === 'dark' ? 'Dark' : 'Light'}</span>
           </button>
           <button
             onClick={handleSignOut}
-            className="w-full text-left text-sm py-2 px-3 rounded hover:bg-red-500/10 text-red-500 transition-colors"
+            className="w-full text-left text-sm py-2 px-3 rounded hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-2"
           >
-            🚪 Sign Out
+            <IconLogout size={16} />
+            Sign Out
           </button>
         </div>
       </div>

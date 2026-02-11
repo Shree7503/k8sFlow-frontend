@@ -1,3 +1,4 @@
+import { IconSettings, IconX } from '@tabler/icons-react';
 import { Card } from './ui/card';
 import RoleBadge from './RoleBadge';
 import type { SystemRoleValue } from '../types/rbac';
@@ -68,28 +69,28 @@ export default function ClusterCard({
             <button
               onClick={canEdit ? onEdit : undefined}
               disabled={!canEdit}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
+              className={`px-2 py-1 text-xs rounded transition-colors flex items-center justify-center ${
                 canEdit
                   ? 'hover:bg-[var(--color-hover-dark)]'
                   : 'opacity-30 cursor-not-allowed'
               }`}
               title={canEdit ? 'Edit' : 'Editor role required'}
             >
-              ⚙
+              <IconSettings size={16} />
             </button>
           )}
           {onDelete && (
             <button
               onClick={canAdmin ? onDelete : undefined}
               disabled={!canAdmin}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
+              className={`px-2 py-1 text-xs rounded transition-colors flex items-center justify-center ${
                 canAdmin
                   ? 'hover:bg-[var(--color-hover-dark)] text-[var(--color-error)]'
                   : 'opacity-30 cursor-not-allowed'
               }`}
               title={canAdmin ? 'Delete' : 'Admin role required'}
             >
-              ✕
+              <IconX size={16} />
             </button>
           )}
         </div>
