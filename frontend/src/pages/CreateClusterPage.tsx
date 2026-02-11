@@ -5,6 +5,7 @@ import { SystemRole } from '../types/rbac';
 import axiosInstance from '../axios/interceptor';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { BackIcon } from '../components/BackIcon';
 
 export default function CreateClusterPage() {
     const navigate = useNavigate();
@@ -66,11 +67,17 @@ export default function CreateClusterPage() {
         <RoleGate minSystemRole={SystemRole.Admin}>
             <div className="h-screen flex flex-col overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
                 {/* Header */}
-                <div className="panel border-b p-4 flex items-center gap-4">
-                    <button onClick={() => navigate('/launcher')} className="text-sm hover:text-[var(--text-secondary)]">
-                        ← Back
-                    </button>
+                <div className="panel border-b px-6 py-3 flex items-center justify-between">
                     <h1 className="text-lg font-bold">Add New Cluster</h1>
+                    <Button
+                        onClick={() => navigate('/launcher')}
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-2 text-xs"
+                    >
+                        <BackIcon className="w-3 h-3" />
+                        Back to Launcher
+                    </Button>
                 </div>
 
                 <div className="flex-1 overflow-auto p-8 flex justify-center">

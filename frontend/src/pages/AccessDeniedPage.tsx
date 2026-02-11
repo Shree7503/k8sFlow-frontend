@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/store';
 import { getRoleName } from '../utils/roleMapper';
 import RoleBadge from '../components/RoleBadge';
 import { Button } from '../components/ui/button';
+import { BackIcon } from '../components/BackIcon';
 
 export default function AccessDeniedPage() {
   const navigate = useNavigate();
@@ -56,9 +57,11 @@ export default function AccessDeniedPage() {
           <div className="flex gap-3 justify-center">
             <Button
               onClick={() => navigate(-1)}
-              variant="secondary"
+              variant="ghost"
+              className="flex items-center gap-2"
             >
-              ← Go Back
+              <BackIcon className="w-3 h-3" />
+              Go Back
             </Button>
             <Button
               onClick={() => navigate('/launcher')}
