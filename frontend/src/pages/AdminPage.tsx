@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconUsers, IconServer, IconGear, IconLogout } from '@tabler/icons-react';
+import { IconUsers, IconServer, IconSettings, IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import { useAuth } from '../context/AuthContext';
 import { useAuthStore } from '../store/store';
@@ -97,7 +97,7 @@ export default function AdminPage() {
                 onClick={() => navigate('/account')}
                 className="w-full flex items-center gap-3 text-sm py-2 px-3 rounded text-gray-300 hover:bg-[#2d2d2d] transition-colors"
               >
-                <IconGear size={16} className="flex-shrink-0" />
+                <IconSettings size={16} className="flex-shrink-0" />
                 <span>Account</span>
               </button>
             </nav>

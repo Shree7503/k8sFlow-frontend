@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconHome, IconUser, IconShield, IconGear, IconBook, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
+import { IconHome, IconUser, IconShield, IconSettings, IconBook, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import ClusterCard from '../components/ClusterCard.tsx';
 import EmptyState from '../components/EmptyState.tsx';
@@ -116,7 +116,7 @@ export default function LauncherPage() {
               </button>
             </RoleGate>
             <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2">
-              <IconGear size={16} />
+              <IconSettings size={16} />
               Settings
             </button>
             <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2">

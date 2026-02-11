@@ -1,4 +1,4 @@
-import { IconGear, IconX } from '@tabler/icons-react';
+import { IconSettings, IconX } from '@tabler/icons-react';
 import { Card } from './ui/card';
 import RoleBadge from './RoleBadge';
 import type { SystemRoleValue } from '../types/rbac';
@@ -76,7 +76,7 @@ export default function ClusterCard({
               }`}
               title={canEdit ? 'Edit' : 'Editor role required'}
             >
-              <IconGear size={16} />
+              <IconSettings size={16} />
             </button>
           )}
           {onDelete && (
