@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useAuthStore, mapRole } from '../store/store';
 import axiosInstance from '../axios/interceptor';
 import { getRoleName } from '../utils/roleMapper';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export default function AccountPage() {
   const navigate = useNavigate();
@@ -68,9 +70,9 @@ export default function AccountPage() {
     <div className="h-screen flex overflow-hidden">
       {/* Left Panel - Navigation */}
       <div className="w-[300px] panel border-r flex flex-col p-6">
-        <button onClick={() => navigate('/launcher')} className="btn-secondary mb-6 text-xs px-3 py-2 text-left">
+        <Button onClick={() => navigate('/launcher')} variant="secondary" size="xs" className="mb-6 justify-start w-full">
           ← Back to Launcher
-        </button>
+        </Button>
 
         <div className="flex items-center gap-3 mb-8">
           <img src={kubernetesLogo} alt="Kubernetes" className="w-10 h-10" />
@@ -115,19 +117,19 @@ export default function AccountPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium opacity-70 mb-2">Full Name</label>
-                <input
+                <Input
                   type="text"
                   defaultValue={user.name}
-                  className="input-field max-w-md"
+                  className="max-w-md"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-medium opacity-70 mb-2">Email</label>
-                <input
+                <Input
                   type="email"
                   defaultValue={user.email}
-                  className="input-field max-w-md"
+                  className="max-w-md"
                   disabled
                 />
                 <p className="text-xs opacity-50 mt-1">Email cannot be changed</p>
@@ -144,7 +146,7 @@ export default function AccountPage() {
               </div>
 
               <div className="pt-4">
-                <button className="btn-primary">Save Changes</button>
+                <Button>Save Changes</Button>
               </div>
             </div>
           </div>
@@ -179,9 +181,9 @@ export default function AccountPage() {
                 <p className="text-xs opacity-60 mb-3">
                   Permanently delete your account and all associated data. This action cannot be undone.
                 </p>
-                <button className="btn-secondary text-red-500 border-red-500 hover:bg-red-500/10 text-xs px-4 py-2">
+                <Button variant="destructive" size="sm">
                   Delete Account
-                </button>
+                </Button>
               </div>
             </div>
           </div>

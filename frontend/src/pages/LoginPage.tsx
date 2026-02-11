@@ -6,6 +6,7 @@ import axiosInstance from '../axios/interceptor';
 import { parseErrorMessage, parseFieldErrors } from '../utils/errorHandler';
 import { useAuthStore, mapRole } from '../store/store';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -107,12 +108,12 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Email</label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`input-field ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="you@example.com"
+                aria-invalid={!!errors.email}
               />
               {errors.email && <p className="mt-1.5 text-xs text-red-500">{errors.email}</p>}
             </div>
@@ -120,12 +121,13 @@ export default function LoginPage() {
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`input-field pr-10 ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
+                  aria-invalid={!!errors.password}
+                  className="pr-10"
                 />
                 <button
                   type="button"

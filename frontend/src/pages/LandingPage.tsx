@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
+import { Button } from '../components/ui/button';
 
 const features = [
   {
@@ -33,12 +34,16 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/login" className="btn-secondary">
-            Sign In
-          </Link>
-          <Link to="/register" className="btn-primary">
-            Get Started
-          </Link>
+          <Button asChild variant="secondary">
+            <Link to="/login">
+              Sign In
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to="/register">
+              Get Started
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -61,12 +66,16 @@ export default function LandingPage() {
           </p>
           
           <div className="flex items-center justify-center gap-4">
-            <Link to="/register" className="btn-primary px-8 py-3">
-              Get Started
-            </Link>
-            <Link to="/login" className="btn-secondary px-8 py-3">
-              Sign In
-            </Link>
+            <Button asChild size="lg">
+              <Link to="/register">
+                Get Started
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="lg">
+              <Link to="/login">
+                Sign In
+              </Link>
+            </Button>
           </div>
         </div>
 

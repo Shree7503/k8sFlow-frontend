@@ -5,6 +5,7 @@ import axiosInstance from '../axios/interceptor';
 import { useAuth } from '../context/AuthContext';
 import { parseErrorMessage, parseFieldErrors } from '../utils/errorHandler';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -129,26 +130,26 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Full Name</label>
-              <input
+              <Input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`input-field ${errors.name ? 'border-red-500' : ''}`}
                 placeholder="John Doe"
+                aria-invalid={!!errors.name}
               />
               {errors.name && <p className="mt-1.5 text-xs text-red-500">{errors.name}</p>}
             </div>
 
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Email</label>
-              <input
+              <Input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`input-field ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="you@example.com"
+                aria-invalid={!!errors.email}
               />
               {errors.email && <p className="mt-1.5 text-xs text-red-500">{errors.email}</p>}
             </div>
@@ -156,13 +157,14 @@ export default function RegisterPage() {
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`input-field pr-10 ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
+                  aria-invalid={!!errors.password}
+                  className="pr-10"
                 />
                 <button
                   type="button"
@@ -189,13 +191,13 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Confirm Password</label>
-              <input
+              <Input
                 type={showPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`input-field ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 placeholder="••••••••"
+                aria-invalid={!!errors.confirmPassword}
               />
               {errors.confirmPassword && <p className="mt-1.5 text-xs text-red-500">{errors.confirmPassword}</p>}
             </div>

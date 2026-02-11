@@ -3,6 +3,7 @@ import axiosInstance from '../../axios/interceptor';
 import RoleBadge from '../RoleBadge';
 import type { ManagedUser, SystemRoleValue } from '../../types/rbac';
 import { parseErrorMessage } from '../../utils/errorHandler';
+import { Input } from '../ui/input';
 
 /**
  * Admin panel for managing users.
@@ -166,13 +167,13 @@ export default function UserManagementPanel() {
               <tr key={u.id}>
                 <td>
                   {editingUser === u.id ? (
-                    <input
+                    <Input
                       type="text"
                       value={editForm.name}
                       onChange={(e) =>
                         setEditForm((prev) => ({ ...prev, name: e.target.value }))
                       }
-                      className="input-field text-xs py-1 px-2 w-40"
+                      className="h-8 w-40 px-2 py-1 text-xs"
                       placeholder="Name"
                     />
                   ) : (
@@ -181,13 +182,13 @@ export default function UserManagementPanel() {
                 </td>
                 <td>
                   {editingUser === u.id ? (
-                    <input
+                    <Input
                       type="email"
                       value={editForm.email}
                       onChange={(e) =>
                         setEditForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      className="input-field text-xs py-1 px-2 w-48"
+                      className="h-8 w-48 px-2 py-1 text-xs"
                       placeholder="Email"
                     />
                   ) : (
