@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAuthStore } from '../store/store';
 import { useRBACStore } from '../store/rbacStore';
 import { SystemRole } from '../types/rbac';
+import { Button } from '../components/ui/button';
 
 
 export default function LauncherPage() {
@@ -150,9 +151,9 @@ export default function LauncherPage() {
           </div>
           {/* Add Cluster: only for Admin users */}
           <RoleGate minSystemRole={SystemRole.Admin}>
-            <button onClick={handleAddCluster} className="btn-primary ml-4">
+            <Button onClick={handleAddCluster} className="ml-4">
               + Add Cluster
-            </button>
+            </Button>
           </RoleGate>
         </div>
 

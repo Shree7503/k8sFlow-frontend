@@ -7,6 +7,7 @@
 The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export interface Position {
     x: number;

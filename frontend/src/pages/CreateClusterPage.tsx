@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import RoleGate from '../components/RoleGate';
 import { SystemRole } from '../types/rbac';
 import axiosInstance from '../axios/interceptor';
+import { Button } from '../components/ui/button';
 
 export default function CreateClusterPage() {
     const navigate = useNavigate();
@@ -44,9 +45,11 @@ export default function CreateClusterPage() {
             });
 
             navigate('/launcher');
-        } catch (err: any) {
+        } catch (err) {
             console.error('Failed to create cluster:', err);
-            setError(err.response?.data?.message || 'Failed to create cluster. Please try again.');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            setError(error.response?.data?.message || 'Failed to create cluster. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -146,20 +149,19 @@ export default function CreateClusterPage() {
                                 </div>
 
                                 <div className="flex items-center justify-end gap-3 pt-6">
-                                    <button
+                                    <Button
                                         type="button"
                                         onClick={() => navigate('/launcher')}
-                                        className="btn px-4 py-2 rounded text-sm hover:bg-[var(--bg-secondary)] transition-colors"
+                                        variant="secondary"
                                     >
                                         Cancel
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="btn-primary"
                                     >
                                         {loading ? 'Creating...' : 'Create Cluster'}
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                         </div>

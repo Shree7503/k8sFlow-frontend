@@ -39,7 +39,7 @@ export default function AccountPage() {
     };
 
     fetchUserData();
-  }, [user?.id, navigate, setUser]);
+  }, [user, user?.id, navigate, setUser]);
 
   const handleSignOut = () => {
     clearUser(); // Clear user from store
