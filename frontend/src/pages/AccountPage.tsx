@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import { useAuth } from '../context/AuthContext';
 import { useAuthStore, mapRole } from '../store/store';
@@ -7,19 +8,7 @@ import axiosInstance from '../axios/interceptor';
 import { getRoleName } from '../utils/roleMapper';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-
-// SVG Icon Components
-const BackIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 12H5M12 19l-7-7 7-7"/>
-  </svg>
-);
-
-const SignOutIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-  </svg>
-);
+import { BackIcon } from '../components/BackIcon';
 
 export default function AccountPage() {
   const navigate = useNavigate();
@@ -126,7 +115,7 @@ export default function AccountPage() {
               onClick={handleSignOut}
               className="w-full flex items-center gap-2 text-sm py-2 px-3 rounded text-red-400 hover:bg-red-500/10 transition-colors"
             >
-              <SignOutIcon className="w-4 h-4" />
+              <IconLogout size={16} />
               Sign Out
             </button>
           </div>
