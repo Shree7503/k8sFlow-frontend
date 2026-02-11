@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { parseErrorMessage, parseFieldErrors } from '../utils/errorHandler';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { BackIcon } from '../components/BackIcon';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -101,8 +102,9 @@ export default function RegisterPage() {
 
   return (
     <div className="h-screen flex items-center justify-center px-4 py-8 overflow-auto relative">
-      <Button onClick={() => navigate('/')} variant="secondary" size="xs" className="absolute top-6 left-6">
-        ← Back
+      <Button onClick={() => navigate('/')} variant="ghost" size="sm" className="absolute top-6 left-6 flex items-center gap-2 text-xs">
+        <BackIcon className="w-3 h-3" />
+        Back
       </Button>
 
       <div className="w-full max-w-md">

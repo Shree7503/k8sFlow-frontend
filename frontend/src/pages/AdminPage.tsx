@@ -6,15 +6,9 @@ import { useAuthStore } from '../store/store';
 import UserManagementPanel from '../components/admin/UserManagementPanel';
 import ClusterAccessPanel from "../components/admin/ClusterAccessPanel";
 import { Button } from '../components/ui/button';
+import { BackIcon } from '../components/BackIcon';
 
 type AdminTab = 'users' | 'clusters';
-
-// SVG Icon Components
-const BackIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 12H5M12 19l-7-7 7-7"/>
-  </svg>
-);
 
 const UserIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
