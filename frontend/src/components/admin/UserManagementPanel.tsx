@@ -197,7 +197,20 @@ export default function UserManagementPanel() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <RoleBadge role={u.role} />
+                  {editingUser === u.id ? (
+                    <select
+                      value={editForm.role}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({ ...prev, role: parseInt(e.target.value) as SystemRoleValue }))
+                      }
+                      className="h-8 px-2 py-1 text-xs rounded border border-input bg-transparent text-current cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                    >
+                      <option value="0">Viewer</option>
+                      <option value="1">Editor</option>
+                    </select>
+                  ) : (
+                    <RoleBadge role={u.role} />
+                  )}
                 </TableCell>
                 <TableCell>
                   <span className="text-xs opacity-50">{u.joined || '—'}</span>
