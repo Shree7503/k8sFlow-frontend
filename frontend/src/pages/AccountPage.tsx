@@ -92,11 +92,11 @@ export default function AccountPage() {
         </div>
         <Button
           onClick={() => navigate('/launcher')}
-          variant="outline"
+          variant="ghost"
           size="sm"
           className="flex items-center gap-2 text-xs"
         >
-          <BackIcon className="w-3.5 h-3.5" />
+          <BackIcon className="w-3 h-3" />
           Back to Launcher
         </Button>
       </div>
