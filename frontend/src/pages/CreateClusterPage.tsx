@@ -41,7 +41,7 @@ export default function CreateClusterPage() {
 
             // 2. Upload Credentials
             const formDataUpload = new FormData();
-            formDataUpload.append('kubeconfig', kubeConfig);
+            formDataUpload.append('file', kubeConfig);
 
             await axiosInstance.post(`/api/v1/clusters/${clusterId}/creds`, formDataUpload, {
                 headers: { 'Content-Type': 'multipart/form-data' },

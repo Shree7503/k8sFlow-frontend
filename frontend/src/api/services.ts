@@ -64,6 +64,10 @@ export const clustersApi = {
   /** PUT /clusters/:id — Admin only */
   update: (id: string, data: { name?: string; provider?: string; description?: string }) =>
     axiosInstance.put(`${API}/clusters/${id}`, data),
+
+  /** DELETE /clusters/:id — Admin only */
+  delete: (id: string) =>
+    axiosInstance.delete(`${API}/clusters/${id}`),
 };
 
 // ─── Cluster Credentials (Admin access to cluster required) ─────
@@ -163,6 +167,12 @@ export interface WorkflowEdge {
   target_id: string;
 }
 
+export interface Workflow {
+  deployments: DeploymentNode[];
+  services: ServiceNode[];
+  edges: WorkflowEdge[];
+}
+
 export const workflowsApi = {
   /** GET /workflows?cluster_id=X */
   list: (clusterId: string) =>
@@ -170,10 +180,9 @@ export const workflowsApi = {
 
   /** POST /workflows/apply */
   apply: (data: {
+    name: string;
     cluster_id: string;
-    deployments: DeploymentNode[];
-    services: ServiceNode[];
-    edges: WorkflowEdge[];
+    workflow: Workflow;
   }) => axiosInstance.post(`${API}/workflows/apply`, data),
 
   /** POST /workflows/destroy */

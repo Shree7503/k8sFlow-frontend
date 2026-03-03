@@ -6,6 +6,7 @@ import LauncherPage from './pages/LauncherPage.tsx';
 import AccountPage from './pages/AccountPage.tsx';
 import AdminPage from './pages/AdminPage.tsx';
 import CreateClusterPage from './pages/CreateClusterPage.tsx';
+import WorkspacePage from './pages/WorkspacePage.tsx';
 import AccessDeniedPage from './pages/AccessDeniedPage.tsx';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
@@ -25,6 +26,7 @@ function App() {
           <Route path="/access-denied" element={<PrivateRoute><AccessDeniedPage /></PrivateRoute>} />
           <Route path="/admin" element={<RoleRoute minRole={SystemRole.Admin}><AdminPage /></RoleRoute>} />
           <Route path="/create-cluster" element={<RoleRoute minRole={SystemRole.Admin}><CreateClusterPage /></RoleRoute>} />
+          <Route path="/workspace/:clusterId" element={<PrivateRoute><WorkspacePage /></PrivateRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

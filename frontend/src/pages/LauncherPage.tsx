@@ -12,6 +12,7 @@ import { useRBACStore } from '../store/rbacStore';
 import { SystemRole } from '../types/rbac';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { clustersApi, connectionApi } from '../api/services';
 
 
 export default function LauncherPage() {
@@ -45,6 +46,23 @@ export default function LauncherPage() {
     clearUser();
     logout();
     navigate('/', { replace: true });
+  };
+
+  const handleDeleteCluster = async (clusterId: string, clusterName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete cluster "${clusterName}"?\n\nThis will remove the cluster and all associated credentials. This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await clustersApi.delete(clusterId);
+      // Refresh the cluster list after deletion
+      await fetchClusterAccess();
+    } catch (error) {
+      console.error('Failed to delete cluster:', error);
+      alert('Failed to delete cluster. Please try again.');
+    }
   };
 
   return (
@@ -157,6 +175,7 @@ export default function LauncherPage() {
               placeholder="Search clusters..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="border-[var(--color-border-dark)] focus-visible:ring-[var(--color-accent)] bg-[var(--color-bg-dark)]"
             />
           </div>
           {/* Add Cluster: only for Admin users */}
@@ -181,6 +200,7 @@ export default function LauncherPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-6xl">
               {filteredClusters.map((cluster) => (
+                console.log(cluster.role),
                 <ClusterCard
                   key={cluster.clusterId}
                   name={cluster.clusterName}
@@ -189,9 +209,14 @@ export default function LauncherPage() {
                   lastConnected={cluster.lastConnected}
                   clusterRole={cluster.role}
                   systemRole={user?.role}
-                  onConnect={() => console.log('Connect:', cluster.clusterName)}
+                  onConnect={async () => {
+                    try {
+                      await connectionApi.connect(cluster.clusterId);
+                    } catch { /* connection might already exist */ }
+                    navigate(`/workspace/${cluster.clusterId}`);
+                  }}
                   onEdit={() => console.log('Edit:', cluster.clusterName)}
-                  onDelete={() => console.log('Delete:', cluster.clusterName)}
+                  onDelete={() => handleDeleteCluster(cluster.clusterId, cluster.clusterName)}
                 />
               ))}
             </div>

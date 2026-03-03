@@ -97,27 +97,22 @@ body.light-theme {
 
 /* Cluster Card */
 .cluster-card {
-  background: var(--color-panel-dark) !important;
-  border: 1px solid var(--color-border-dark) !important;
-  border-radius: 0.25rem !important;
-  padding: 1rem !important;
-  gap: 0 !important;
-  transition: all 0.2s ease;
+  background: var(--color-panel-dark);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 0.5rem; /* modern rounded corners */
+  padding: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  position: relative;
 }
 
 .light-theme .cluster-card {
-  background: var(--color-panel-light) !important;
-  border-color: var(--color-border-light) !important;
+  background: var(--color-panel-light);
+  border-color: var(--color-border-light);
 }
 
 .cluster-card:hover {
-  border-color: var(--color-accent);
-  background: var(--color-hover-dark);
-}
-
-.light-theme .cluster-card:hover {
-  background: var(--color-hover-light);
+  transform: translateY(-2px);
 }
 
 /* Link Styles */
@@ -188,7 +183,7 @@ a:hover {
 
 .role-viewer {
   background: rgba(134, 142, 150, 0.15);
-  color: #868e96;
+  color: #aeb5bc; /* Brighter grey for better visibility */
   border: 1px solid rgba(134, 142, 150, 0.3);
 }
 
@@ -255,14 +250,17 @@ a:hover {
   font-size: 0.875rem;
 }
 
+.admin-table thead,
 .admin-table [data-slot="table-header"] {
   background: var(--color-bg-dark) !important;
 }
 
+.light-theme .admin-table thead,
 .light-theme .admin-table [data-slot="table-header"] {
   background: var(--color-bg-light) !important;
 }
 
+.admin-table th,
 .admin-table [data-slot="table-head"] {
   text-align: left;
   padding: 0.75rem 1rem !important;
@@ -273,23 +271,29 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
+.admin-table td,
 .admin-table [data-slot="table-cell"] {
   padding: 0.75rem 1rem !important;
   border-top: 1px solid var(--color-border-dark) !important;
+  vertical-align: middle;
 }
 
+.light-theme .admin-table td,
 .light-theme .admin-table [data-slot="table-cell"] {
   border-top-color: var(--color-border-light) !important;
 }
 
+.admin-table tr,
 .admin-table [data-slot="table-row"] {
   transition: background 0.15s ease;
 }
 
+.admin-table tbody tr:hover,
 .admin-table [data-slot="table-body"] [data-slot="table-row"]:hover {
   background: var(--color-hover-dark) !important;
 }
 
+.light-theme .admin-table tbody tr:hover,
 .light-theme .admin-table [data-slot="table-body"] [data-slot="table-row"]:hover {
   background: var(--color-hover-light) !important;
 }
@@ -412,4 +416,358 @@ a:hover {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ═══════════════════════════════════════════════════
+   WORKSPACE — ReactFlow Canvas
+   ═══════════════════════════════════════════════════ */
+
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: var(--color-bg-darker, #1a1d23);
+  overflow: hidden;
+}
+
+/* Toolbar */
+.workspace-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--color-panel-dark, #111118);
+  border-bottom: 1px solid var(--color-border-dark, #1e1e2e);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.workspace-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workspace-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.workspace-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: transparent;
+  color: var(--color-text-muted, #888);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.workspace-back-btn:hover {
+  background: var(--color-border-dark, #1e1e2e);
+  color: #fff;
+}
+
+.workspace-cluster-info h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0;
+  line-height: 1.2;
+}
+.workspace-cluster-id {
+  font-size: 10px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--color-text-muted, #555);
+}
+
+.workspace-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.workspace-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.workspace-btn-apply {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #fff;
+  border: none;
+}
+.workspace-btn-apply:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+}
+
+.workspace-btn-clear {
+  background: transparent;
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+.workspace-btn-clear:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.workspace-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  animation: fadeIn 0.3s ease;
+}
+.workspace-status.success {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+}
+.workspace-status.error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Body: palette + canvas */
+.workspace-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── Node Palette ─── */
+.node-palette {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--color-panel-dark, #111118);
+  border-right: 1px solid var(--color-border-dark, #1e1e2e);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.palette-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border-dark, #1e1e2e);
+}
+.palette-header h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.palette-header p {
+  font-size: 11px;
+  color: var(--color-text-muted, #555);
+  margin: 0;
+}
+
+.palette-items {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: var(--color-bg-darker, #1a1d23);
+  cursor: grab;
+  transition: all 0.2s;
+  user-select: none;
+}
+.palette-item:hover {
+  border-color: var(--accent, #3b82f6);
+  background: rgba(59, 130, 246, 0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.palette-item:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+
+.palette-grip {
+  color: var(--color-text-muted, #444);
+  flex-shrink: 0;
+}
+
+.palette-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.palette-label {
+  display: flex;
+  flex-direction: column;
+}
+.palette-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+.palette-hint {
+  font-size: 10px;
+  color: var(--color-text-muted, #555);
+}
+
+/* ─── Canvas ─── */
+.workspace-canvas {
+  flex: 1;
+  position: relative;
+}
+
+/* ReactFlow dark overrides */
+.workspace-canvas .react-flow__pane {
+  cursor: default;
+}
+.workspace-canvas .react-flow__background {
+  background: var(--color-bg-darker, #1a1d23) !important;
+}
+.workspace-controls button {
+  background: var(--color-panel-dark, #111118) !important;
+  border: 1px solid var(--color-border-dark, #1e1e2e) !important;
+  color: #aaa !important;
+  border-radius: 6px !important;
+}
+.workspace-controls button:hover {
+  background: var(--color-border-dark, #1e1e2e) !important;
+  color: #fff !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   WORKFLOW NODES (custom)
+   ═══════════════════════════════════════════════════ */
+
+.workflow-node {
+  min-width: 240px;
+  background: var(--color-panel-dark, #111118);
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.workflow-node:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Node headers */
+.workflow-node-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.deployment-header {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+.service-header {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.deployment-node:hover {
+  border-color: #3b82f680;
+}
+.service-node:hover {
+  border-color: #10b98180;
+}
+
+/* Node body */
+.workflow-node-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.workflow-node-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.workflow-node-body label span {
+  font-size: 10px;
+  color: var(--color-text-muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.workflow-node-body input,
+.workflow-node-body select {
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: var(--color-bg-darker, #1a1d23);
+  color: #e0e0e0;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.workflow-node-body input:focus,
+.workflow-node-body select:focus {
+  border-color: var(--color-accent, #6366f1);
+}
+.workflow-node-body input::placeholder {
+  color: #444;
+}
+
+.workflow-node-row {
+  display: flex;
+  gap: 8px;
+}
+.workflow-node-row label.half {
+  flex: 1;
+}
+
+/* Connection handles */
+.workflow-handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: var(--color-accent, #6366f1) !important;
+  border: 2px solid var(--color-panel-dark, #111118) !important;
+  border-radius: 50% !important;
+}
+.workflow-handle:hover {
+  background: #818cf8 !important;
+  transform: scale(1.3);
+}
+
+/* Edge default styling */
+.react-flow__edge-path {
+  stroke: var(--color-accent, #6366f1) !important;
+  stroke-width: 2 !important;
 }
