@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import { useAuth } from '../context/AuthContext';
 import { useAuthStore, mapRole } from '../store/store';
 import axiosInstance from '../axios/interceptor';
 import { getRoleName } from '../utils/roleMapper';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { BackIcon } from '../components/BackIcon';
 
 export default function AccountPage() {
   const navigate = useNavigate();
@@ -39,7 +43,7 @@ export default function AccountPage() {
     };
 
     fetchUserData();
-  }, [user?.id, navigate, setUser]);
+  }, [user, user?.id, navigate, setUser]);
 
   const handleSignOut = () => {
     clearUser(); // Clear user from store
@@ -65,45 +69,60 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden">
-      {/* Left Panel - Navigation */}
-      <div className="w-[300px] panel border-r flex flex-col p-6">
-        <button onClick={() => navigate('/launcher')} className="btn-secondary mb-6 text-xs px-3 py-2 text-left">
-          ← Back to Launcher
-        </button>
-
-        <div className="flex items-center gap-3 mb-8">
-          <img src={kubernetesLogo} alt="Kubernetes" className="w-10 h-10" />
+    <div className="h-screen flex flex-col overflow-hidden">
+      {/* Header Bar */}
+      <div className="panel border-b px-6 py-3 flex items-center justify-between bg-gradient-to-r from-[#1a1a1a] to-[#252525]">
+        <div className="flex items-center gap-3">
+          <img src={kubernetesLogo} alt="Kubernetes" className="w-6 h-6" />
           <div>
-            <h1 className="text-lg font-bold">K8sFlow</h1>
-            <p className="text-xs opacity-50">Account Settings</p>
+            <h1 className="text-sm font-bold">K8sFlow</h1>
+            <p className="text-xs opacity-40">Account Settings</p>
+          </div>
+        </div>
+        <Button
+          onClick={() => navigate('/launcher')}
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-2 text-xs"
+        >
+          <BackIcon className="w-3 h-3" />
+          Back to Launcher
+        </Button>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Navigation */}
+        <div className="w-[240px] panel border-r flex flex-col bg-[#1e1e1e] p-4">
+          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+            Settings
+          </div>
+          <nav className="space-y-1">
+            <button className="w-full text-left text-sm py-2 px-3 rounded bg-[#326CE5] text-white font-medium transition-colors">
+              Profile
+            </button>
+            <button className="w-full text-left text-sm py-2 px-3 rounded text-gray-300 hover:bg-[#2d2d2d] transition-colors">
+              Security
+            </button>
+            <button className="w-full text-left text-sm py-2 px-3 rounded text-gray-300 hover:bg-[#2d2d2d] transition-colors">
+              Preferences
+            </button>
+          </nav>
+
+          <div className="flex-1" />
+
+          <div className="border-t border-gray-700 pt-4">
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-2 text-sm py-2 px-3 rounded text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+              <IconLogout size={16} />
+              Sign Out
+            </button>
           </div>
         </div>
 
-        <nav className="space-y-1">
-          <button className="w-full text-left text-sm py-2 px-3 rounded bg-[var(--color-hover-dark)] font-medium">
-            Profile
-          </button>
-          <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors opacity-70">
-            Security
-          </button>
-          <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors opacity-70">
-            Preferences
-          </button>
-        </nav>
-
-        <div className="flex-1" />
-
-        <button
-          onClick={handleSignOut}
-          className="w-full text-left text-sm py-2 px-3 rounded text-red-500 hover:bg-red-500/10 transition-colors"
-        >
-          🚪 Sign Out
-        </button>
-      </div>
-
-      {/* Right Panel - Content */}
-      <div className="flex-1 overflow-auto p-8">
+        {/* Right Panel - Content */}
+        <div className="flex-1 overflow-auto p-8">
         <div className="max-w-3xl">
           <h1 className="text-2xl font-bold mb-2">Profile</h1>
           <p className="text-sm opacity-60 mb-8">Manage your account settings and preferences</p>
@@ -115,19 +134,19 @@ export default function AccountPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium opacity-70 mb-2">Full Name</label>
-                <input
+                <Input
                   type="text"
                   defaultValue={user.name}
-                  className="input-field max-w-md"
+                  className="max-w-md"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-medium opacity-70 mb-2">Email</label>
-                <input
+                <Input
                   type="email"
                   defaultValue={user.email}
-                  className="input-field max-w-md"
+                  className="max-w-md"
                   disabled
                 />
                 <p className="text-xs opacity-50 mt-1">Email cannot be changed</p>
@@ -144,7 +163,7 @@ export default function AccountPage() {
               </div>
 
               <div className="pt-4">
-                <button className="btn-primary">Save Changes</button>
+                <Button>Save Changes</Button>
               </div>
             </div>
           </div>
@@ -179,13 +198,14 @@ export default function AccountPage() {
                 <p className="text-xs opacity-60 mb-3">
                   Permanently delete your account and all associated data. This action cannot be undone.
                 </p>
-                <button className="btn-secondary text-red-500 border-red-500 hover:bg-red-500/10 text-xs px-4 py-2">
+                <Button variant="destructive" size="sm">
                   Delete Account
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

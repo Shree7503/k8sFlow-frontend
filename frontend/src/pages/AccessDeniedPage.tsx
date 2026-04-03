@@ -1,8 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { IconAlertTriangle } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import { useAuthStore } from '../store/store';
 import { getRoleName } from '../utils/roleMapper';
 import RoleBadge from '../components/RoleBadge';
+import { Button } from '../components/ui/button';
+import { BackIcon } from '../components/BackIcon';
 
 export default function AccessDeniedPage() {
   const navigate = useNavigate();
@@ -20,17 +23,9 @@ export default function AccessDeniedPage() {
         </div>
 
         <div className="panel p-8 access-denied-card">
-          {/* Shield icon */}
-          <div className="access-denied-icon mb-6">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="w-16 h-16 mx-auto opacity-40"
-            >
-              <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
+          {/* Alert icon */}
+          <div className="access-denied-icon mb-6 flex justify-center">
+            <IconAlertTriangle size={64} className="opacity-40" />
           </div>
 
           <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
@@ -53,18 +48,19 @@ export default function AccessDeniedPage() {
           </p>
 
           <div className="flex gap-3 justify-center">
-            <button
+            <Button
               onClick={() => navigate(-1)}
-              className="btn-secondary text-sm px-4 py-2"
+              variant="ghost"
+              className="flex items-center gap-2"
             >
-              ← Go Back
-            </button>
-            <button
+              <BackIcon className="w-3 h-3" />
+              Go Back
+            </Button>
+            <Button
               onClick={() => navigate('/launcher')}
-              className="btn-primary text-sm px-4 py-2"
             >
               Go to Launcher
-            </button>
+            </Button>
           </div>
         </div>
       </div>

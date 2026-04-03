@@ -3,6 +3,8 @@ import axiosInstance from '../../axios/interceptor';
 import RoleBadge from '../RoleBadge';
 import type { ManagedUser, SystemRoleValue } from '../../types/rbac';
 import { parseErrorMessage } from '../../utils/errorHandler';
+import { Input } from '../ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 
 /**
  * Admin panel for managing users.
@@ -151,56 +153,69 @@ export default function UserManagementPanel() {
       )}
 
       <div className="panel overflow-hidden">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Joined</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="admin-table">
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {users.map((u) => (
-              <tr key={u.id}>
-                <td>
+              <TableRow key={u.id}>
+                <TableCell>
                   {editingUser === u.id ? (
-                    <input
+                    <Input
                       type="text"
                       value={editForm.name}
                       onChange={(e) =>
                         setEditForm((prev) => ({ ...prev, name: e.target.value }))
                       }
-                      className="input-field text-xs py-1 px-2 w-40"
+                      className="h-8 w-40 px-2 py-1 text-xs"
                       placeholder="Name"
                     />
                   ) : (
                     <span className="font-medium">{u.name || '—'}</span>
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {editingUser === u.id ? (
-                    <input
+                    <Input
                       type="email"
                       value={editForm.email}
                       onChange={(e) =>
                         setEditForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      className="input-field text-xs py-1 px-2 w-48"
+                      className="h-8 w-48 px-2 py-1 text-xs"
                       placeholder="Email"
                     />
                   ) : (
                     <span className="font-mono text-xs opacity-70">{u.email}</span>
                   )}
-                </td>
-                <td>
-                  <RoleBadge role={u.role} />
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
+                  {editingUser === u.id ? (
+                    <select
+                      value={editForm.role}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({ ...prev, role: parseInt(e.target.value) as SystemRoleValue }))
+                      }
+                      className="h-8 px-2 py-1 text-xs rounded border border-input bg-transparent text-current cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                    >
+                      <option value="0">Viewer</option>
+                      <option value="1">Editor</option>
+                    </select>
+                  ) : (
+                    <RoleBadge role={u.role} />
+                  )}
+                </TableCell>
+                <TableCell>
                   <span className="text-xs opacity-50">{u.joined || '—'}</span>
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {editingUser === u.id ? (
                     <div className="flex gap-2">
                       <button
@@ -248,18 +263,18 @@ export default function UserManagementPanel() {
                       </button>
                     </div>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {users.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-center opacity-50 py-8">
+              <TableRow>
+                <TableCell colSpan={5} className="text-center opacity-50 py-8">
                   No users found
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

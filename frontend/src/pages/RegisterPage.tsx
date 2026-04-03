@@ -4,6 +4,9 @@ import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import axiosInstance from '../axios/interceptor';
 import { useAuth } from '../context/AuthContext';
 import { parseErrorMessage, parseFieldErrors } from '../utils/errorHandler';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { BackIcon } from '../components/BackIcon';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -99,9 +102,10 @@ export default function RegisterPage() {
 
   return (
     <div className="h-screen flex items-center justify-center px-4 py-8 overflow-auto relative">
-      <button onClick={() => navigate('/')} className="btn-secondary absolute top-6 left-6 text-xs px-3 py-2">
-        ← Back
-      </button>
+      <Button onClick={() => navigate('/')} variant="ghost" size="sm" className="absolute top-6 left-6 flex items-center gap-2 text-xs">
+        <BackIcon className="w-3 h-3" />
+        Back
+      </Button>
 
       <div className="w-full max-w-md">
 
@@ -128,26 +132,26 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Full Name</label>
-              <input
+              <Input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`input-field ${errors.name ? 'border-red-500' : ''}`}
                 placeholder="John Doe"
+                aria-invalid={!!errors.name}
               />
               {errors.name && <p className="mt-1.5 text-xs text-red-500">{errors.name}</p>}
             </div>
 
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Email</label>
-              <input
+              <Input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`input-field ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="you@example.com"
+                aria-invalid={!!errors.email}
               />
               {errors.email && <p className="mt-1.5 text-xs text-red-500">{errors.email}</p>}
             </div>
@@ -155,13 +159,14 @@ export default function RegisterPage() {
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`input-field pr-10 ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
+                  aria-invalid={!!errors.password}
+                  className="pr-10"
                 />
                 <button
                   type="button"
@@ -188,13 +193,13 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-xs font-medium opacity-70 mb-2">Confirm Password</label>
-              <input
+              <Input
                 type={showPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`input-field ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 placeholder="••••••••"
+                aria-invalid={!!errors.confirmPassword}
               />
               {errors.confirmPassword && <p className="mt-1.5 text-xs text-red-500">{errors.confirmPassword}</p>}
             </div>
@@ -214,9 +219,9 @@ export default function RegisterPage() {
             </label>
             {errors.acceptTerms && <p className="text-xs text-red-500">{errors.acceptTerms}</p>}
 
-            <button type="submit" className="btn-primary w-full py-2.5">
+            <Button type="submit" className="w-full">
               Create Account
-            </button>
+            </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-[var(--color-border-dark)] text-center text-xs">

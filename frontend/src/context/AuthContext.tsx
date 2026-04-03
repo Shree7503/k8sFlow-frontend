@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useEffect, useCallback, type ReactNode } from 'react';
 import { useAuthToken } from "../hooks/useAuth";
 import { useAuthStore } from "../store/store";
 import { useRBACStore } from "../store/rbacStore";
@@ -27,26 +27,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
     }, [token, fetchClusterAccess]);
 
-    const login = (newToken: string) => {
+    const login = useCallback((newToken: string) => {
         setToken(newToken);
         // cluster access will be fetched by the useEffect above
-    };
+    }, [setToken]);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         clearUser();       // Clear user from Zustand store
         clearAccess();     // Clear RBAC cluster access
         removeToken();     // Clear auth token from localStorage
-    };
+    }, [clearUser, clearAccess, removeToken]);
 
     const value = useMemo(() => ({
         token,
         login,
         logout,
-    }), [token]);
+    }), [token, login, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

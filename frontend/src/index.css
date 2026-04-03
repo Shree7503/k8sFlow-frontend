@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 /* K8sFlow Desktop Theme - Technical IDE Style */
 @theme {
   /* Dark Theme (Default) */
@@ -10,7 +12,7 @@
   --color-text-dark: #cccccc;
   --color-text-muted-dark: #858585;
   --color-hover-dark: #2a2d2e;
-  
+
   /* Light Theme */
   --color-bg-light: #ffffff;
   --color-panel-light: #f3f3f3;
@@ -18,16 +20,16 @@
   --color-text-light: #333333;
   --color-text-muted-light: #6b6b6b;
   --color-hover-light: #e8e8e8;
-  
+
   /* Kubernetes Blue Accent */
   --color-accent: #326CE5;
   --color-accent-hover: #2457B5;
-  
+
   /* Status Colors */
   --color-success: #4caf50;
   --color-error: #f44336;
   --color-warning: #ff9800;
-  
+
   /* Fonts */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -73,80 +75,6 @@ body.light-theme {
   border-color: var(--color-border-light);
 }
 
-/* Button Styles */
-.btn-primary {
-  background: var(--color-accent);
-  color: white;
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.25rem;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.btn-primary:hover {
-  background: var(--color-accent-hover);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--color-text-dark);
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.25rem;
-  border: 1px solid var(--color-border-dark);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.light-theme .btn-secondary {
-  color: var(--color-text-light);
-  border-color: var(--color-border-light);
-}
-
-.btn-secondary:hover {
-  background: var(--color-hover-dark);
-}
-
-.light-theme .btn-secondary:hover {
-  background: var(--color-hover-light);
-}
-
-/* Input Styles */
-.input-field {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  background: var(--color-bg-dark);
-  border: 1px solid var(--color-border-dark);
-  border-radius: 0.25rem;
-  color: var(--color-text-dark);
-  font-size: 0.875rem;
-  transition: border-color 0.2s ease;
-  font-family: var(--font-sans);
-}
-
-.light-theme .input-field {
-  background: var(--color-bg-light);
-  border-color: var(--color-border-light);
-  color: var(--color-text-light);
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--color-accent);
-}
-
-.input-field::placeholder {
-  color: var(--color-text-muted-dark);
-}
-
-.light-theme .input-field::placeholder {
-  color: var(--color-text-muted-light);
-}
-
 /* Status Indicators */
 .status-dot {
   width: 8px;
@@ -171,10 +99,11 @@ body.light-theme {
 .cluster-card {
   background: var(--color-panel-dark);
   border: 1px solid var(--color-border-dark);
-  border-radius: 0.25rem;
+  border-radius: 0.5rem; /* modern rounded corners */
   padding: 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  position: relative;
 }
 
 .light-theme .cluster-card {
@@ -183,12 +112,7 @@ body.light-theme {
 }
 
 .cluster-card:hover {
-  border-color: var(--color-accent);
-  background: var(--color-hover-dark);
-}
-
-.light-theme .cluster-card:hover {
-  background: var(--color-hover-light);
+  transform: translateY(-2px);
 }
 
 /* Link Styles */
@@ -238,28 +162,28 @@ a:hover {
 /* ─── RBAC: Role Badges ──────────────────────────────────────── */
 
 .role-badge {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   font-weight: 600;
-  border-radius: 0.25rem;
+  border-radius: 0.25rem !important;
   letter-spacing: 0.025em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .role-badge-sm {
-  font-size: 0.625rem;
-  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem !important;
+  padding: 0.125rem 0.375rem !important;
 }
 
 .role-badge-md {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
 }
 
 .role-viewer {
   background: rgba(134, 142, 150, 0.15);
-  color: #868e96;
+  color: #aeb5bc; /* Brighter grey for better visibility */
   border: 1px solid rgba(134, 142, 150, 0.3);
 }
 
@@ -323,21 +247,23 @@ a:hover {
 
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
   font-size: 0.875rem;
 }
 
-.admin-table thead {
-  background: var(--color-bg-dark);
+.admin-table thead,
+.admin-table [data-slot="table-header"] {
+  background: var(--color-bg-dark) !important;
 }
 
-.light-theme .admin-table thead {
-  background: var(--color-bg-light);
+.light-theme .admin-table thead,
+.light-theme .admin-table [data-slot="table-header"] {
+  background: var(--color-bg-light) !important;
 }
 
-.admin-table th {
+.admin-table th,
+.admin-table [data-slot="table-head"] {
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem !important;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -345,23 +271,574 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
-.admin-table td {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--color-border-dark);
+.admin-table td,
+.admin-table [data-slot="table-cell"] {
+  padding: 0.75rem 1rem !important;
+  border-top: 1px solid var(--color-border-dark) !important;
+  vertical-align: middle;
 }
 
-.light-theme .admin-table td {
-  border-top-color: var(--color-border-light);
+.light-theme .admin-table td,
+.light-theme .admin-table [data-slot="table-cell"] {
+  border-top-color: var(--color-border-light) !important;
 }
 
-.admin-table tbody tr {
+.admin-table tr,
+.admin-table [data-slot="table-row"] {
   transition: background 0.15s ease;
 }
 
-.admin-table tbody tr:hover {
-  background: var(--color-hover-dark);
+.admin-table tbody tr:hover,
+.admin-table [data-slot="table-body"] [data-slot="table-row"]:hover {
+  background: var(--color-hover-dark) !important;
 }
 
-.light-theme .admin-table tbody tr:hover {
-  background: var(--color-hover-light);
+.light-theme .admin-table tbody tr:hover,
+.light-theme .admin-table [data-slot="table-body"] [data-slot="table-row"]:hover {
+  background: var(--color-hover-light) !important;
+}
+
+@theme inline {
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
+  --radius-4xl: 1.5rem;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.25rem;
+  /* Light theme colors */
+  --background: #ffffff;
+  --foreground: #333333;
+  --card: #f3f3f3;
+  --card-foreground: #333333;
+  --popover: #ffffff;
+  --popover-foreground: #333333;
+  --primary: #326CE5;
+  --primary-foreground: #ffffff;
+  --secondary: #e5e5e5;
+  --secondary-foreground: #333333;
+  --muted: #e5e5e5;
+  --muted-foreground: #6b6b6b;
+  --accent: #326CE5;
+  --accent-foreground: #ffffff;
+  --destructive: #f44336;
+  --border: #e5e5e5;
+  --input: #ffffff;
+  --ring: #326CE5;
+  --chart-1: #326CE5;
+  --chart-2: #4caf50;
+  --chart-3: #ff9800;
+  --chart-4: #9c27b0;
+  --chart-5: #2196f3;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #333333;
+  --sidebar-primary: #326CE5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #326CE5;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #326CE5;
+}
+
+.dark {
+  --background: #1e1e1e;
+  --foreground: #cccccc;
+  --card: #252526;
+  --card-foreground: #cccccc;
+  --popover: #252526;
+  --popover-foreground: #cccccc;
+  --primary: #326CE5;
+  --primary-foreground: #ffffff;
+  --secondary: #3e3e42;
+  --secondary-foreground: #cccccc;
+  --muted: #3e3e42;
+  --muted-foreground: #858585;
+  --accent: #326CE5;
+  --accent-foreground: #ffffff;
+  --destructive: #f44336;
+  --border: #3e3e42;
+  --input: #1e1e1e;
+  --ring: #326CE5;
+  --chart-1: #326CE5;
+  --chart-2: #4caf50;
+  --chart-3: #ff9800;
+  --chart-4: #9c27b0;
+  --chart-5: #2196f3;
+  --sidebar: #252526;
+  --sidebar-foreground: #cccccc;
+  --sidebar-primary: #326CE5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #326CE5;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3e3e42;
+  --sidebar-ring: #326CE5;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   WORKSPACE — ReactFlow Canvas
+   ═══════════════════════════════════════════════════ */
+
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: var(--color-bg-darker, #1a1d23);
+  overflow: hidden;
+}
+
+/* Toolbar */
+.workspace-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 10px;
+  background: #2b2b2b;
+  border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0;
+  z-index: 10;
+  gap: 8px;
+}
+
+.workspace-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.workspace-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* thin vertical divider between button groups */
+.workspace-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: #3c3c3c;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.workspace-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #8c8c8c;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.workspace-back-btn:hover {
+  background: #3c3f41;
+  color: #bbb;
+}
+
+.workspace-cluster-info h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #bbb;
+  margin: 0;
+  line-height: 1.2;
+}
+.workspace-cluster-id {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #5a5a5a;
+}
+
+/* ── IntelliJ-style flat toolbar buttons ── */
+.workspace-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: var(--font-sans);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  letter-spacing: 0.01em;
+}
+.workspace-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.workspace-btn:focus-visible {
+  outline: 1px solid #4d78cc;
+  outline-offset: 1px;
+}
+
+/* Primary action — Apply: solid K8s-blue fill, IntelliJ-primary style */
+.workspace-btn-apply {
+  background: #214283;
+  color: #9ab8f3;
+  border-color: #2d5099;
+}
+.workspace-btn-apply:hover:not(:disabled) {
+  background: #2a508f;
+  border-color: #4472ca;
+  color: #c8dbff;
+}
+.workspace-btn-apply:active:not(:disabled) {
+  background: #1e3a6e;
+}
+
+/* Save — ghost with green tint */
+.workspace-btn-save {
+  background: transparent;
+  color: #6a9955;
+  border-color: #2e3d2e;
+}
+.workspace-btn-save:hover:not(:disabled) {
+  background: #1f2d1f;
+  border-color: #3a5c3a;
+  color: #7ec86c;
+}
+.workspace-btn-save:active:not(:disabled) {
+  background: #17231a;
+}
+
+/* Delete Selected — ghost with amber/warning tint */
+.workspace-btn-delete-sel {
+  background: transparent;
+  color: #9d7a30;
+  border-color: #3a3020;
+}
+.workspace-btn-delete-sel:hover:not(:disabled) {
+  background: #26200f;
+  border-color: #5a4820;
+  color: #c9972a;
+}
+.workspace-btn-delete-sel:active:not(:disabled) {
+  background: #1a1505;
+}
+
+/* Clear — ghost with red/destructive tint */
+.workspace-btn-clear {
+  background: transparent;
+  color: #855555;
+  border-color: #3a2020;
+}
+.workspace-btn-clear:hover:not(:disabled) {
+  background: #251515;
+  border-color: #5a2f2f;
+  color: #c96060;
+}
+.workspace-btn-clear:active:not(:disabled) {
+  background: #1a0d0d;
+}
+
+.workspace-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  animation: fadeIn 0.3s ease;
+}
+.workspace-status.success {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+}
+.workspace-status.error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Body: palette + canvas */
+.workspace-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── Node Palette ─── */
+.node-palette {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--color-panel-dark, #111118);
+  border-right: 1px solid var(--color-border-dark, #1e1e2e);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.palette-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border-dark, #1e1e2e);
+}
+.palette-header h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.palette-header p {
+  font-size: 11px;
+  color: var(--color-text-muted, #555);
+  margin: 0;
+}
+
+.palette-items {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: var(--color-bg-darker, #1a1d23);
+  cursor: grab;
+  transition: all 0.2s;
+  user-select: none;
+}
+.palette-item:hover {
+  border-color: var(--accent, #3b82f6);
+  background: rgba(59, 130, 246, 0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.palette-item:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+
+.palette-grip {
+  color: var(--color-text-muted, #444);
+  flex-shrink: 0;
+}
+
+.palette-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.palette-label {
+  display: flex;
+  flex-direction: column;
+}
+.palette-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+.palette-hint {
+  font-size: 10px;
+  color: var(--color-text-muted, #555);
+}
+
+/* ─── Canvas ─── */
+.workspace-canvas {
+  flex: 1;
+  position: relative;
+}
+
+/* ReactFlow dark overrides */
+.workspace-canvas .react-flow__pane {
+  cursor: default;
+}
+.workspace-canvas .react-flow__background {
+  background: var(--color-bg-darker, #1a1d23) !important;
+}
+.workspace-controls button {
+  background: var(--color-panel-dark, #111118) !important;
+  border: 1px solid var(--color-border-dark, #1e1e2e) !important;
+  color: #aaa !important;
+  border-radius: 6px !important;
+}
+.workspace-controls button:hover {
+  background: var(--color-border-dark, #1e1e2e) !important;
+  color: #fff !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   WORKFLOW NODES (custom)
+   ═══════════════════════════════════════════════════ */
+
+.workflow-node {
+  min-width: 240px;
+  background: var(--color-panel-dark, #111118);
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.workflow-node:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Node headers */
+.workflow-node-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.deployment-header {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+.service-header {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.deployment-node:hover {
+  border-color: #3b82f680;
+}
+.service-node:hover {
+  border-color: #10b98180;
+}
+
+/* Node body */
+.workflow-node-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.workflow-node-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.workflow-node-body label span {
+  font-size: 10px;
+  color: var(--color-text-muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.workflow-node-body input,
+.workflow-node-body select {
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: var(--color-bg-darker, #1a1d23);
+  color: #e0e0e0;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.workflow-node-body input:focus,
+.workflow-node-body select:focus {
+  border-color: var(--color-accent, #6366f1);
+}
+.workflow-node-body input::placeholder {
+  color: #444;
+}
+
+/* Auto-synced field — subtle teal tint to signal it's managed by a connection */
+.workflow-node-body input.field-synced {
+  border-color: #2a4a3a;
+  background: #1a2820;
+  color: #7ec86c;
+}
+.workflow-node-body input.field-synced:focus {
+  border-color: #3a6a50;
+}
+
+.workflow-node-row {
+  display: flex;
+  gap: 8px;
+}
+.workflow-node-row label.half {
+  flex: 1;
+}
+
+/* Connection handles */
+.workflow-handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: var(--color-accent, #6366f1) !important;
+  border: 2px solid var(--color-panel-dark, #111118) !important;
+  border-radius: 50% !important;
+}
+.workflow-handle:hover {
+  background: #818cf8 !important;
+  transform: scale(1.3);
+}
+
+/* Edge default styling */
+.react-flow__edge-path {
+  stroke: var(--color-accent, #6366f1) !important;
+  stroke-width: 2 !important;
 }

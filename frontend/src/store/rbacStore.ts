@@ -24,29 +24,22 @@ export const useRBACStore = create<RBACState>()(
       fetchClusterAccess: async () => {
         set({ loading: true, error: null });
         try {
-          // GET /clusters returns { clusters: [...] }
           const response = await axiosInstance.get('/api/v1/clusters');
           const data = response.data;
 
-          const rawClusters: Array<{
-            id?: string;
-            name?: string;
-            provider?: string;
-            description?: string;
-            created_at?: string;
-          }> = Array.isArray(data.clusters)
+          const rawClusters: any[] = Array.isArray(data.clusters)
             ? data.clusters
             : Array.isArray(data)
             ? data
             : [];
 
           const access: ClusterAccess[] = rawClusters.map((c) => ({
-            clusterId: c.id || '',
-            clusterName: c.name || '',
-            context: c.provider || '',
-            role: 0 as SystemRoleValue, // default; enriched below if admin
+            clusterId: c.id || c.ID || '',
+            clusterName: c.name || c.Name || '',
+            context: c.provider || c.Provider || '',
+            role: (c.role !== undefined ? c.role : c.Role !== undefined ? c.Role : 0) as SystemRoleValue,
             status: 'disconnected' as ClusterAccess['status'],
-            lastConnected: c.created_at,
+            lastConnected: c.created_at || c.CreatedAt,
           }));
 
           set({ clusterAccess: access, loading: false });

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconHome, IconUser, IconShield, IconSettings, IconBook, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import kubernetesLogo from '../assets/Kubernetes_logo_without_workmark.svg';
 import ClusterCard from '../components/ClusterCard.tsx';
 import EmptyState from '../components/EmptyState.tsx';
@@ -9,6 +10,9 @@ import { useAuth } from '../context/AuthContext';
 import { useAuthStore } from '../store/store';
 import { useRBACStore } from '../store/rbacStore';
 import { SystemRole } from '../types/rbac';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { clustersApi, connectionApi } from '../api/services';
 
 
 export default function LauncherPage() {
@@ -42,6 +46,23 @@ export default function LauncherPage() {
     clearUser();
     logout();
     navigate('/', { replace: true });
+  };
+
+  const handleDeleteCluster = async (clusterId: string, clusterName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete cluster "${clusterName}"?\n\nThis will remove the cluster and all associated credentials. This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await clustersApi.delete(clusterId);
+      // Refresh the cluster list after deletion
+      await fetchClusterAccess();
+    } catch (error) {
+      console.error('Failed to delete cluster:', error);
+      alert('Failed to delete cluster. Please try again.');
+    }
   };
 
   return (
@@ -90,30 +111,35 @@ export default function LauncherPage() {
           <div className="border-t border-[var(--color-border-dark)] pt-6 space-y-1">
             <button
               onClick={() => navigate('/')}
-              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors"
+              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2"
             >
-              🏠 Home
+              <IconHome size={16} />
+              Home
             </button>
             <button
               onClick={() => navigate('/account')}
-              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors"
+              className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2"
             >
-              👤 Account
+              <IconUser size={16} />
+              Account
             </button>
             {/* Admin link: only visible to Admin users */}
             <RoleGate minSystemRole={SystemRole.Admin}>
               <button
                 onClick={() => navigate('/admin')}
-                className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors"
+                className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2"
               >
-                🛡️ Admin Panel
+                <IconShield size={16} />
+                Admin Panel
               </button>
             </RoleGate>
-            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors">
-              ⚙ Settings
+            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2">
+              <IconSettings size={16} />
+              Settings
             </button>
-            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors">
-              📚 Documentation
+            <button className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center gap-2">
+              <IconBook size={16} />
+              Documentation
             </button>
           </div>
         </div>
@@ -123,14 +149,18 @@ export default function LauncherPage() {
             onClick={toggleTheme}
             className="w-full text-left text-sm py-2 px-3 rounded hover:bg-[var(--color-hover-dark)] transition-colors flex items-center justify-between"
           >
-            <span>{theme === 'dark' ? '🌙' : '☀️'} Theme</span>
+            <span className="flex items-center gap-2">
+              {theme === 'dark' ? <IconMoon size={16} /> : <IconSun size={16} />}
+              Theme
+            </span>
             <span className="text-xs opacity-50">{theme === 'dark' ? 'Dark' : 'Light'}</span>
           </button>
           <button
             onClick={handleSignOut}
-            className="w-full text-left text-sm py-2 px-3 rounded hover:bg-red-500/10 text-red-500 transition-colors"
+            className="w-full text-left text-sm py-2 px-3 rounded hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-2"
           >
-            🚪 Sign Out
+            <IconLogout size={16} />
+            Sign Out
           </button>
         </div>
       </div>
@@ -140,19 +170,19 @@ export default function LauncherPage() {
         {/* Header */}
         <div className="panel border-b p-4 flex items-center justify-between">
           <div className="flex-1 max-w-md">
-            <input
+            <Input
               type="text"
               placeholder="Search clusters..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field w-full"
+              className="border-[var(--color-border-dark)] focus-visible:ring-[var(--color-accent)] bg-[var(--color-bg-dark)]"
             />
           </div>
           {/* Add Cluster: only for Admin users */}
           <RoleGate minSystemRole={SystemRole.Admin}>
-            <button onClick={handleAddCluster} className="btn-primary ml-4">
+            <Button onClick={handleAddCluster} className="ml-4">
               + Add Cluster
-            </button>
+            </Button>
           </RoleGate>
         </div>
 
@@ -178,9 +208,14 @@ export default function LauncherPage() {
                   lastConnected={cluster.lastConnected}
                   clusterRole={cluster.role}
                   systemRole={user?.role}
-                  onConnect={() => console.log('Connect:', cluster.clusterName)}
+                  onConnect={async () => {
+                    try {
+                      await connectionApi.connect(cluster.clusterId);
+                    } catch { /* connection might already exist */ }
+                    navigate(`/workspace/${cluster.clusterId}`);
+                  }}
                   onEdit={() => console.log('Edit:', cluster.clusterName)}
-                  onDelete={() => console.log('Delete:', cluster.clusterName)}
+                  onDelete={() => handleDeleteCluster(cluster.clusterId, cluster.clusterName)}
                 />
               ))}
             </div>
