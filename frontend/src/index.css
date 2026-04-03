@@ -436,91 +436,152 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 52px;
-  padding: 0 16px;
-  background: var(--color-panel-dark, #111118);
-  border-bottom: 1px solid var(--color-border-dark, #1e1e2e);
+  height: 40px;
+  padding: 0 10px;
+  background: #2b2b2b;
+  border-bottom: 1px solid #1a1a1a;
   flex-shrink: 0;
   z-index: 10;
+  gap: 8px;
 }
 
 .workspace-toolbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
 }
 
 .workspace-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
+}
+
+/* thin vertical divider between button groups */
+.workspace-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: #3c3c3c;
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
 .workspace-back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border-dark, #1e1e2e);
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: none;
   background: transparent;
-  color: var(--color-text-muted, #888);
+  color: #8c8c8c;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 .workspace-back-btn:hover {
-  background: var(--color-border-dark, #1e1e2e);
-  color: #fff;
+  background: #3c3f41;
+  color: #bbb;
 }
 
 .workspace-cluster-info h2 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: #bbb;
   margin: 0;
   line-height: 1.2;
 }
 .workspace-cluster-id {
   font-size: 10px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  color: var(--color-text-muted, #555);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #5a5a5a;
 }
 
+/* ── IntelliJ-style flat toolbar buttons ── */
 .workspace-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
+  font-family: var(--font-sans);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  letter-spacing: 0.01em;
 }
 .workspace-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.38;
   cursor: not-allowed;
 }
+.workspace-btn:focus-visible {
+  outline: 1px solid #4d78cc;
+  outline-offset: 1px;
+}
 
+/* Primary action — Apply: solid K8s-blue fill, IntelliJ-primary style */
 .workspace-btn-apply {
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  color: #fff;
-  border: none;
+  background: #214283;
+  color: #9ab8f3;
+  border-color: #2d5099;
 }
 .workspace-btn-apply:hover:not(:disabled) {
-  filter: brightness(1.1);
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+  background: #2a508f;
+  border-color: #4472ca;
+  color: #c8dbff;
+}
+.workspace-btn-apply:active:not(:disabled) {
+  background: #1e3a6e;
 }
 
+/* Save — ghost with green tint */
+.workspace-btn-save {
+  background: transparent;
+  color: #6a9955;
+  border-color: #2e3d2e;
+}
+.workspace-btn-save:hover:not(:disabled) {
+  background: #1f2d1f;
+  border-color: #3a5c3a;
+  color: #7ec86c;
+}
+.workspace-btn-save:active:not(:disabled) {
+  background: #17231a;
+}
+
+/* Delete Selected — ghost with amber/warning tint */
+.workspace-btn-delete-sel {
+  background: transparent;
+  color: #9d7a30;
+  border-color: #3a3020;
+}
+.workspace-btn-delete-sel:hover:not(:disabled) {
+  background: #26200f;
+  border-color: #5a4820;
+  color: #c9972a;
+}
+.workspace-btn-delete-sel:active:not(:disabled) {
+  background: #1a1505;
+}
+
+/* Clear — ghost with red/destructive tint */
 .workspace-btn-clear {
   background: transparent;
-  color: #f87171;
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: #855555;
+  border-color: #3a2020;
 }
 .workspace-btn-clear:hover:not(:disabled) {
-  background: rgba(248, 113, 113, 0.08);
+  background: #251515;
+  border-color: #5a2f2f;
+  color: #c96060;
+}
+.workspace-btn-clear:active:not(:disabled) {
+  background: #1a0d0d;
 }
 
 .workspace-status {
@@ -743,6 +804,16 @@ a:hover {
 }
 .workflow-node-body input::placeholder {
   color: #444;
+}
+
+/* Auto-synced field — subtle teal tint to signal it's managed by a connection */
+.workflow-node-body input.field-synced {
+  border-color: #2a4a3a;
+  background: #1a2820;
+  color: #7ec86c;
+}
+.workflow-node-body input.field-synced:focus {
+  border-color: #3a6a50;
 }
 
 .workflow-node-row {

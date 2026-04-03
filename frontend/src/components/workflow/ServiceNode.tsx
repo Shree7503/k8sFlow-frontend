@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { IconNetwork } from '@tabler/icons-react';
 
@@ -8,7 +8,57 @@ export interface ServiceNodeData {
     protocol: string;
     port: number;
     target_port: number;
+    selector: string;   // app label selector — auto-synced from connected Deployment name
     onChange?: (id: string, data: Partial<ServiceNodeData>) => void;
+}
+
+/**
+ * A number input that lets the user type freely (including clearing to empty),
+ * only committing a valid value (or the default) on blur.
+ */
+function NumericInput({
+    value,
+    min = 1,
+    max,
+    defaultValue,
+    className,
+    title,
+    onChange,
+}: {
+    value: number;
+    min?: number;
+    max?: number;
+    defaultValue: number;
+    className?: string;
+    title?: string;
+    onChange: (n: number) => void;
+}) {
+    const [local, setLocal] = useState(String(value));
+
+    // Keep local in sync when the value changes externally (e.g. auto-sync)
+    useEffect(() => { setLocal(String(value)); }, [value]);
+
+    return (
+        <input
+            type="number"
+            min={min}
+            max={max}
+            value={local}
+            className={className}
+            title={title}
+            onChange={(e) => {
+                setLocal(e.target.value);
+                const n = parseInt(e.target.value, 10);
+                if (!isNaN(n)) onChange(n);
+            }}
+            onBlur={(e) => {
+                const n = parseInt(e.target.value, 10);
+                const final = isNaN(n) ? defaultValue : Math.max(min ?? 1, n);
+                setLocal(String(final));
+                onChange(final);
+            }}
+        />
+    );
 }
 
 function ServiceNodeComponent({ id, data }: NodeProps) {
@@ -48,6 +98,17 @@ function ServiceNodeComponent({ id, data }: NodeProps) {
                     />
                 </label>
                 <label>
+                    <span>Selector (app:)</span>
+                    <input
+                        value={nodeData.selector || ''}
+                        onChange={(e) => handleChange('selector', e.target.value)}
+                        placeholder="auto-filled on connect"
+                        className={nodeData.selector ? 'field-synced' : ''}
+                        title={nodeData.selector ? 'Auto-synced from connected Deployment name' : 'Connect to a Deployment to auto-fill'}
+                        readOnly={!!nodeData.selector}
+                    />
+                </label>
+                <label>
                     <span>Protocol</span>
                     <select
                         value={nodeData.protocol || 'TCP'}
@@ -61,22 +122,24 @@ function ServiceNodeComponent({ id, data }: NodeProps) {
                 <div className="workflow-node-row">
                     <label className="half">
                         <span>Port</span>
-                        <input
-                            type="number"
+                        <NumericInput
+                            value={nodeData.port ?? 80}
                             min={1}
                             max={65535}
-                            value={nodeData.port ?? 80}
-                            onChange={(e) => handleChange('port', parseInt(e.target.value) || 80)}
+                            defaultValue={80}
+                            onChange={(n) => handleChange('port', n)}
                         />
                     </label>
                     <label className="half">
                         <span>Target Port</span>
-                        <input
-                            type="number"
+                        <NumericInput
+                            value={nodeData.target_port ?? 80}
                             min={1}
                             max={65535}
-                            value={nodeData.target_port ?? 80}
-                            onChange={(e) => handleChange('target_port', parseInt(e.target.value) || 80)}
+                            defaultValue={80}
+                            className={nodeData.selector ? 'field-synced' : ''}
+                            title="Auto-synced from connected Deployment port"
+                            onChange={(n) => handleChange('target_port', n)}
                         />
                     </label>
                 </div>

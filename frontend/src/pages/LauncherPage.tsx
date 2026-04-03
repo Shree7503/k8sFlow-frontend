@@ -200,7 +200,6 @@ export default function LauncherPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-6xl">
               {filteredClusters.map((cluster) => (
-                console.log(cluster.role),
                 <ClusterCard
                   key={cluster.clusterId}
                   name={cluster.clusterName}

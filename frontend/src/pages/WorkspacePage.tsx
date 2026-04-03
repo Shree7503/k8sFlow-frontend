@@ -9,6 +9,7 @@ import {
     addEdge,
     useNodesState,
     useEdgesState,
+    useReactFlow,
     type Connection,
     type Edge,
     type Node,
@@ -20,6 +21,8 @@ import {
     IconRocket,
     IconTrash,
     IconLoader2,
+    IconDeviceFloppy,
+    IconX,
 } from '@tabler/icons-react';
 import DeploymentNodeComponent from '../components/workflow/DeploymentNode';
 import ServiceNodeComponent from '../components/workflow/ServiceNode';
@@ -32,8 +35,58 @@ const nodeTypes = {
     service: ServiceNodeComponent,
 };
 
-let nodeId = 0;
-const getNodeId = () => `node_${nodeId++}`;
+/** Derive the next safe node ID from the current set of nodes. */
+function getNextNodeId(existingNodes: Node[]): string {
+    const maxId = existingNodes.reduce((max, n) => {
+        const match = n.id.match(/^node_(\d+)$/);
+        return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, -1);
+    return `node_${maxId + 1}`;
+}
+
+// ── Canvas persistence helpers ────────────────────────────────────
+const canvasKey = (clusterId: string) => `k8sflow:canvas:${clusterId}`;
+
+interface PersistedCanvas {
+    nodes: { id: string; type: string; position: { x: number; y: number }; data: Record<string, unknown> }[];
+    edges: { id: string; source: string; target: string; animated?: boolean }[];
+}
+
+function saveCanvas(clusterId: string, nodes: Node[], edges: Edge[]) {
+    const payload: PersistedCanvas = {
+        nodes: nodes.map((n) => ({
+            id: n.id,
+            type: n.type as string,
+            position: n.position,
+            // Strip the onChange fn — functions can't be JSON serialised
+            data: Object.fromEntries(
+                Object.entries(n.data as Record<string, unknown>).filter(([k]) => k !== 'onChange')
+            ),
+        })),
+        edges: edges.map((e) => ({
+            id: e.id,
+            source: e.source,
+            target: e.target,
+            animated: e.animated,
+        })),
+    };
+    try {
+        localStorage.setItem(canvasKey(clusterId), JSON.stringify(payload));
+    } catch { /* quota exceeded — silently ignore */ }
+}
+
+function loadCanvas(clusterId: string): PersistedCanvas | null {
+    try {
+        const raw = localStorage.getItem(canvasKey(clusterId));
+        return raw ? (JSON.parse(raw) as PersistedCanvas) : null;
+    } catch {
+        return null;
+    }
+}
+
+function clearCanvas(clusterId: string) {
+    localStorage.removeItem(canvasKey(clusterId));
+}
 
 function WorkspaceCanvas() {
     const { clusterId } = useParams<{ clusterId: string }>();
@@ -46,7 +99,21 @@ function WorkspaceCanvas() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [applying, setApplying] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [statusMsg, setStatusMsg] = useState<string | null>(null);
+
+    const { deleteElements } = useReactFlow();
+
+    // A stable ref that always holds the latest edges — used inside handleNodeDataChange
+    // to avoid adding `edges` as a dependency (which would cause an infinite update loop
+    // because handleNodeDataChange is stored inside node.data.onChange).
+    const edgesRef = useRef<Edge[]>(edges);
+    useEffect(() => { edgesRef.current = edges; }, [edges]);
+
+    // Count selected nodes + edges for the Delete Selected button
+    const selectedCount =
+        nodes.filter((n) => n.selected).length +
+        edges.filter((e) => e.selected).length;
 
     const clusterAccess = useRBACStore((s) => s.clusterAccess);
     const cluster = clusterAccess.find((c) => c.clusterId === clusterId);
@@ -54,32 +121,113 @@ function WorkspaceCanvas() {
 
     const handleNodeDataChange = useCallback(
         (nodeId: string, newData: Record<string, unknown>) => {
-            setNodes((nds: Node[]) =>
-                nds.map((node: Node) =>
+            setNodes((nds: Node[]) => {
+                // 1. Apply the change to the node itself
+                const updated = nds.map((node: Node) =>
                     node.id === nodeId
                         ? { ...node, data: { ...node.data, ...newData } }
                         : node
-                )
-            );
+                );
+
+                // 2. If the changed node is a Deployment and a sync-relevant field
+                //    changed, propagate to all directly connected Service nodes.
+                //    Read edges from edgesRef (not from closure) to keep this
+                //    callback stable and prevent infinite re-render loops.
+                const changedNode = updated.find((n) => n.id === nodeId);
+                if (changedNode?.type !== 'deployment') return updated;
+
+                const syncFields = ['name', 'port', 'namespace'] as const;
+                const hasSyncableChange = syncFields.some((f) => f in newData);
+                if (!hasSyncableChange) return updated;
+
+                const currentEdges = edgesRef.current;
+                const connectedServiceIds = new Set(
+                    currentEdges
+                        .filter((e) => e.source === nodeId || e.target === nodeId)
+                        .map((e) => (e.source === nodeId ? e.target : e.source))
+                        .filter((id) => {
+                            const n = updated.find((x) => x.id === id);
+                            return n?.type === 'service';
+                        })
+                );
+
+                if (connectedServiceIds.size === 0) return updated;
+
+                const d = changedNode.data as Record<string, unknown>;
+                return updated.map((n) => {
+                    if (!connectedServiceIds.has(n.id)) return n;
+                    const patch: Record<string, unknown> = {};
+                    if ('name' in newData) patch.selector = (d.name as string) || '';
+                    if ('port' in newData) patch.target_port = (d.port as number) ?? 80;
+                    if ('namespace' in newData) patch.namespace = (d.namespace as string) || '';
+                    return { ...n, data: { ...n.data, ...patch } };
+                });
+            });
         },
-        [setNodes]
+        [setNodes]  // stable — edgesRef is a ref, not a reactive dep
     );
 
     const isValidConnection = useCallback((connection: Edge | Connection) => {
+        // Block self-loops
         if (connection.source === connection.target) return false;
-        return true;
+        // Block duplicate edges (both directions) between the same pair
+        const hasDuplicate = edgesRef.current.some(
+            (e) =>
+                (e.source === connection.source && e.target === connection.target) ||
+                (e.source === connection.target && e.target === connection.source)
+        );
+        return !hasDuplicate;
     }, []);
 
+    // ── Restore canvas from localStorage on mount ────────────────
     useEffect(() => {
         if (!clusterId) return;
+
+        // Step 1: immediately restore saved canvas (preserves positions)
+        const saved = loadCanvas(clusterId);
+        if (saved) {
+            const restoredNodes: Node[] = saved.nodes.map((n) => ({
+                ...n,
+                data: { ...n.data, onChange: handleNodeDataChange },
+            }));
+            const restoredEdges: Edge[] = saved.edges.map((e) => ({
+                ...e,
+                animated: e.animated ?? true,
+                style: { stroke: 'var(--color-accent)', strokeWidth: 2 },
+            }));
+            setNodes(restoredNodes);
+            setEdges(restoredEdges);
+        }
+
+        // Step 2: also fetch latest data from backend to merge node field values
+        // (in case deployments/services were modified server-side)
         workflowsApi.list(clusterId).then((res) => {
-            const wf = res.data;
-            if (wf?.deployments || wf?.services) {
+            // Handle both flat { deployments } and wrapped { data: { deployments } } shapes
+            const wf = res.data?.workflow ?? res.data?.data ?? res.data;
+            if (!wf?.deployments && !wf?.services) return;
+
+            if (saved) {
+                // Merge: update data fields from API but keep saved positions
+                setNodes((current: Node[]) =>
+                    current.map((node: Node) => {
+                        const apiNode =
+                            node.type === 'deployment'
+                                ? (wf.deployments || []).find((d: any) => d.id === node.id)
+                                : (wf.services || []).find((s: any) => s.id === node.id);
+                        if (!apiNode) return node;
+                        return {
+                            ...node,
+                            data: { ...node.data, ...apiNode, onChange: handleNodeDataChange },
+                        };
+                    })
+                );
+            } else {
+                // No saved canvas — build from API data with default positions
                 const loaded: Node[] = [];
                 let x = 100;
                 (wf.deployments || []).forEach((d: any) => {
                     loaded.push({
-                        id: d.id || getNodeId(),
+                        id: d.id || getNextNodeId(loaded),
                         type: 'deployment',
                         position: { x, y: 100 },
                         data: { ...d, onChange: handleNodeDataChange },
@@ -88,9 +236,9 @@ function WorkspaceCanvas() {
                 });
                 (wf.services || []).forEach((s: any) => {
                     loaded.push({
-                        id: s.id || getNodeId(),
+                        id: s.id || getNextNodeId(loaded),
                         type: 'service',
-                        position: { x, y: 100 },
+                        position: { x, y: 300 },
                         data: { ...s, onChange: handleNodeDataChange },
                     });
                     x += 320;
@@ -108,19 +256,98 @@ function WorkspaceCanvas() {
                     setEdges(loadedEdges);
                 }
             }
-        }).catch(() => {
-        });
+        }).catch(() => { /* backend not reachable or no workflow yet */ });
     }, [clusterId, handleNodeDataChange, setNodes, setEdges]);
 
+    // Wrap onEdgesChange so that when an edge is removed, we clear
+    // auto-synced fields (selector, target_port, namespace) on the Service.
+    const handleEdgesChange = useCallback(
+        (changes: any[]) => {
+            // Detect removed edges before they disappear
+            const removedEdges = changes
+                .filter((c: any) => c.type === 'remove')
+                .map((c: any) => edgesRef.current.find((e) => e.id === c.id))
+                .filter(Boolean) as Edge[];
+
+            // Apply the edge changes first
+            onEdgesChange(changes);
+
+            if (removedEdges.length === 0) return;
+
+            // For each removed edge, check if it linked a deployment ↔ service
+            setNodes((nds: Node[]) => {
+                let updated = nds;
+                for (const edge of removedEdges) {
+                    const src = updated.find((n) => n.id === edge.source);
+                    const tgt = updated.find((n) => n.id === edge.target);
+                    const service = src?.type === 'service' ? src : tgt?.type === 'service' ? tgt : null;
+                    const deployment = src?.type === 'deployment' ? src : tgt?.type === 'deployment' ? tgt : null;
+                    if (!service || !deployment) continue;
+
+                    // Check if the service still has another edge to a deployment
+                    const remainingEdges = edgesRef.current.filter(
+                        (e) => e.id !== edge.id &&
+                            (e.source === service.id || e.target === service.id)
+                    );
+                    const stillConnected = remainingEdges.some((e) => {
+                        const otherId = e.source === service.id ? e.target : e.source;
+                        return updated.find((n) => n.id === otherId)?.type === 'deployment';
+                    });
+
+                    if (!stillConnected) {
+                        updated = updated.map((n) =>
+                            n.id === service.id
+                                ? { ...n, data: { ...n.data, selector: '', target_port: 80 } }
+                                : n
+                        );
+                    }
+                }
+                return updated;
+            });
+        },
+        [onEdgesChange, setNodes]
+    );
+
     const onConnect = useCallback(
-        (params: Connection) =>
+        (params: Connection) => {
+            // Add the edge first (with consistent styling)
             setEdges((eds: Edge[]) =>
-                addEdge(
-                    { ...params, animated: true },
-                    eds
-                )
-            ),
-        [setEdges]
+                addEdge({ ...params, animated: true, style: { stroke: 'var(--color-accent)', strokeWidth: 2 } }, eds)
+            );
+
+            // Auto-sync fields between a connected Deployment ↔ Service pair
+            setNodes((nds: Node[]) => {
+                const src = nds.find((n) => n.id === params.source);
+                const tgt = nds.find((n) => n.id === params.target);
+                if (!src || !tgt) return nds;
+
+                // Work out which node is the deployment and which is the service
+                const deployment = src.type === 'deployment' ? src
+                    : tgt.type === 'deployment' ? tgt : null;
+                const service = src.type === 'service' ? src
+                    : tgt.type === 'service' ? tgt : null;
+
+                if (!deployment || !service) return nds;  // same-type connection — no sync
+
+                const d = deployment.data as Record<string, unknown>;
+                return nds.map((n) => {
+                    if (n.id !== service.id) return n;
+                    return {
+                        ...n,
+                        data: {
+                            ...n.data,
+                            // selector must match the Deployment's app label (its name)
+                            selector: (d.name as string) || (n.data as Record<string, unknown>).selector,
+                            // target_port must point at the container port
+                            target_port: (d.port as number) ?? (n.data as Record<string, unknown>).target_port,
+                            // keep namespace in sync
+                            namespace: (d.namespace as string) || (n.data as Record<string, unknown>).namespace,
+                        },
+                    };
+                });
+            });
+        },
+        [setEdges, setNodes]
     );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -134,40 +361,42 @@ function WorkspaceCanvas() {
             const type = event.dataTransfer.getData('application/reactflow-type');
             if (!type || !reactFlowInstance || !reactFlowWrapper.current) return;
 
-            const bounds = reactFlowWrapper.current.getBoundingClientRect();
+            // @xyflow/react v12+ screenToFlowPosition already accounts for
+            // the wrapper offset, so pass raw client coords.
             const position = reactFlowInstance.screenToFlowPosition({
-                x: event.clientX - bounds.left,
-                y: event.clientY - bounds.top,
+                x: event.clientX,
+                y: event.clientY,
             });
+            setNodes((nds: Node[]) => {
+                const newId = getNextNodeId(nds);
+                const data: any =
+                    type === 'deployment'
+                        ? {
+                            name: '',
+                            namespace: 'default',
+                            image: '',
+                            replicas: 1,
+                            port: 80,
+                            onChange: handleNodeDataChange,
+                        }
+                        : {
+                            name: '',
+                            namespace: 'default',
+                            protocol: 'TCP',
+                            port: 80,
+                            target_port: 80,
+                            onChange: handleNodeDataChange,
+                        };
 
-            const newId = getNodeId();
-            const data: any =
-                type === 'deployment'
-                    ? {
-                        name: '',
-                        namespace: 'default',
-                        image: '',
-                        replicas: 1,
-                        port: 80,
-                        onChange: handleNodeDataChange,
-                    }
-                    : {
-                        name: '',
-                        namespace: 'default',
-                        protocol: 'TCP',
-                        port: 80,
-                        target_port: 80,
-                        onChange: handleNodeDataChange,
-                    };
+                const newNode: Node = {
+                    id: newId,
+                    type,
+                    position,
+                    data,
+                };
 
-            const newNode: Node = {
-                id: newId,
-                type,
-                position,
-                data,
-            };
-
-            setNodes((nds: Node[]) => [...nds, newNode]);
+                return [...nds, newNode];
+            });
         },
         [reactFlowInstance, handleNodeDataChange, setNodes]
     );
@@ -226,6 +455,9 @@ function WorkspaceCanvas() {
                     edges: workflowEdges,
                 },
             });
+            // Persist the canvas state (nodes with positions + edges) to localStorage
+            // `nodes` and `edges` are already current at handleApply call time
+            saveCanvas(clusterId, nodes, edges);
             setStatusMsg('Workflow applied successfully!');
         } catch (err: any) {
             console.error('[ApplyWorkflow] error:', err?.response?.status, JSON.stringify(err?.response?.data));
@@ -235,6 +467,22 @@ function WorkspaceCanvas() {
             setTimeout(() => setStatusMsg(null), 4000);
         }
     };
+
+    // Save canvas to localStorage only (no Kubernetes deploy)
+    const handleSave = () => {
+        if (!clusterId) return;
+        setSaving(true);
+        saveCanvas(clusterId, nodes, edges);
+        setStatusMsg('Canvas saved!');
+        setTimeout(() => { setStatusMsg(null); setSaving(false); }, 2000);
+    };
+
+    // Delete all currently selected nodes and edges
+    const handleDeleteSelected = useCallback(() => {
+        const selectedNodes = nodes.filter((n) => n.selected);
+        const selectedEdges = edges.filter((e) => e.selected);
+        deleteElements({ nodes: selectedNodes, edges: selectedEdges });
+    }, [nodes, edges, deleteElements]);
 
     // Disconnect and go back
     const handleBack = async () => {
@@ -259,10 +507,28 @@ function WorkspaceCanvas() {
                 </div>
                 <div className="workspace-toolbar-right">
                     {statusMsg && (
-                        <span className={`workspace-status ${statusMsg.includes('success') ? 'success' : 'error'}`}>
+                        <span className={`workspace-status ${statusMsg.includes('saved') || statusMsg.includes('success') ? 'success' : 'error'}`}>
                             {statusMsg}
                         </span>
                     )}
+                    <button
+                        className="workspace-btn workspace-btn-delete-sel"
+                        onClick={handleDeleteSelected}
+                        disabled={selectedCount === 0}
+                        title="Delete selected nodes / edges"
+                    >
+                        <IconX size={16} />
+                        Delete{selectedCount > 0 ? ` (${selectedCount})` : ''}
+                    </button>
+                    <button
+                        className="workspace-btn workspace-btn-save"
+                        onClick={handleSave}
+                        disabled={saving || nodes.length === 0}
+                        title="Save canvas layout to local storage"
+                    >
+                        {saving ? <IconLoader2 size={16} className="animate-spin" /> : <IconDeviceFloppy size={16} />}
+                        {saving ? 'Saving...' : 'Save'}
+                    </button>
                     <button
                         className="workspace-btn workspace-btn-apply"
                         onClick={handleApply}
@@ -277,7 +543,7 @@ function WorkspaceCanvas() {
                     </button>
                     <button
                         className="workspace-btn workspace-btn-clear"
-                        onClick={() => { setNodes([]); setEdges([]); }}
+                        onClick={() => { setNodes([]); setEdges([]); if (clusterId) clearCanvas(clusterId); }}
                         disabled={nodes.length === 0}
                     >
                         <IconTrash size={16} />
@@ -295,7 +561,7 @@ function WorkspaceCanvas() {
                         edges={edges}
                         nodeTypes={nodeTypes}
                         onNodesChange={onNodesChange}
-                        onEdgesChange={onEdgesChange}
+                        onEdgesChange={handleEdgesChange}
                         onConnect={onConnect}
                         isValidConnection={isValidConnection}
                         onInit={setReactFlowInstance}
