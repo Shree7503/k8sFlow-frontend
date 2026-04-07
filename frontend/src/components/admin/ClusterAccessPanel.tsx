@@ -5,7 +5,6 @@ import { SystemRole } from '../../types/rbac';
 import type { SystemRoleValue, ClusterAccessAssignment } from '../../types/rbac';
 import { parseErrorMessage } from '../../utils/errorHandler';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 
 interface ClusterOption {
   id: string;
@@ -53,9 +52,10 @@ export default function ClusterAccessPanel() {
   const fetchInitialData = async () => {
     try {
       setLoading(true);
-      const [accessRes, clustersRes] = await Promise.all([
+      const [accessRes, clustersRes, usersRes] = await Promise.all([
         axiosInstance.get('/api/v1/clusters/access'),
         axiosInstance.get('/api/v1/clusters'),
+        axiosInstance.get(`/api/v1/users?t=${Date.now()}`),
       ]);
 
       // Parse cluster access: { cluster_access: [...] }
@@ -74,6 +74,21 @@ export default function ClusterAccessPanel() {
           ? clustersRes.data
           : [];
 
+      // Parse users: { users: [...] } or [...]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawUsers: any[] = Array.isArray(usersRes.data.users)
+        ? usersRes.data.users
+        : Array.isArray(usersRes.data)
+          ? usersRes.data
+          : [];
+
+      const userOptions: UserOption[] = rawUsers.map((u) => ({
+        id: u.id || u.ID || '',
+        name: u.name || u.Name || '',
+        email: u.email || u.Email || '',
+      }));
+      setKnownUsers(userOptions);
+
       const clusterMap = new Map<string, string>();
       const clusterOptions: ClusterOption[] = rawClusters.map((c) => {
         const id = c.id || c.ID || '';
@@ -82,6 +97,12 @@ export default function ClusterAccessPanel() {
         return { id, name };
       });
       setClusters(clusterOptions);
+
+      // Build a user name lookup for assignments table
+      const userNameMap = new Map<string, string>();
+      userOptions.forEach((u) => {
+        userNameMap.set(u.id, u.name || u.email || u.id);
+      });
 
       const parsed: ClusterAccessAssignment[] = rawAccess.map((a) => {
         const userId = a.user_id || a.UserID || '';
@@ -96,19 +117,6 @@ export default function ClusterAccessPanel() {
         };
       });
       setAssignments(parsed);
-
-      // Build unique user list from assignments
-      const userMap = new Map<string, UserOption>();
-      parsed.forEach((a) => {
-        if (!userMap.has(a.userId)) {
-          userMap.set(a.userId, {
-            id: a.userId,
-            name: a.userId, // We only have the ID from this endpoint
-            email: '',
-          });
-        }
-      });
-      setKnownUsers(Array.from(userMap.values()));
     } catch (err) {
       setError(parseErrorMessage(err, 'Failed to load data'));
     } finally {
@@ -228,7 +236,7 @@ export default function ClusterAccessPanel() {
           <option value="">— All users —</option>
           {knownUsers.map((u) => (
             <option key={u.id} value={u.id}>
-              {u.name}
+              {u.name || u.email || u.id}{u.email && u.name ? ` (${u.email})` : ''}
             </option>
           ))}
         </select>
@@ -247,7 +255,7 @@ export default function ClusterAccessPanel() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>User ID</th>
+              <th>User</th>
               <th>Cluster</th>
               <th>Role</th>
               <th>Actions</th>
@@ -257,9 +265,23 @@ export default function ClusterAccessPanel() {
             {filteredAssignments.map((a) => (
               <tr key={`${a.userId}-${a.clusterId}`}>
                 <td>
-                  <span className="font-mono text-xs opacity-70">
-                    {a.userId}
-                  </span>
+                  {(() => {
+                    const user = knownUsers.find((u) => u.id === a.userId);
+                    return user && (user.name || user.email) ? (
+                      <div>
+                        <span className="font-medium text-sm">
+                          {user.name || user.email}
+                        </span>
+                        <span className="block font-mono text-[10px] opacity-40 mt-0.5" title={a.userId}>
+                          {a.userId.substring(0, 8)}…
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-xs opacity-70" title={a.userId}>
+                        {a.userId.substring(0, 12)}…
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td>
                   <span className="font-medium text-sm">
@@ -312,15 +334,20 @@ export default function ClusterAccessPanel() {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_150px_auto] gap-4 items-end">
           <div>
             <label className="block text-xs font-medium opacity-70 mb-1">
-              User ID
+              User
             </label>
-            <Input
-              type="text"
+            <select
               value={newUserId}
               onChange={(e) => setNewUserId(e.target.value)}
-              placeholder="Enter user UUID"
-              className="border-[var(--color-border-dark)] focus-visible:ring-[var(--color-accent)]"
-            />
+              className="flex h-9 w-full rounded border border-[var(--color-border-dark)] bg-[var(--color-bg-dark)] px-3 py-1 text-sm transition-[color,box-shadow] outline-none focus-visible:border-[var(--color-accent)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">— Select user —</option>
+              {knownUsers.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name || u.email || u.id}{u.email && u.name ? ` (${u.email})` : ''}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-medium opacity-70 mb-1">

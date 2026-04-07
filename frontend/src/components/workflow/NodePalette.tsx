@@ -1,4 +1,4 @@
-import { IconBox, IconNetwork, IconGripVertical } from '@tabler/icons-react';
+import { IconBox, IconNetwork, IconWorldWww, IconFileText, IconGripVertical } from '@tabler/icons-react';
 
 interface PaletteItemProps {
     type: string;
@@ -51,6 +51,18 @@ export default function NodePalette() {
                     label="Service"
                     icon={<IconNetwork size={18} color="#fff" />}
                     color="#10b981"
+                />
+                <PaletteItem
+                    type="ingress"
+                    label="Ingress"
+                    icon={<IconWorldWww size={18} color="#fff" />}
+                    color="#8b5cf6"
+                />
+                <PaletteItem
+                    type="configmap"
+                    label="ConfigMap"
+                    icon={<IconFileText size={18} color="#fff" />}
+                    color="#f59e0b"
                 />
             </div>
         </div>

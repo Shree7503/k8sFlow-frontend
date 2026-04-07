@@ -13,6 +13,7 @@ import {
     type Connection,
     type Edge,
     type Node,
+    type NodeMouseHandler,
     ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -24,15 +25,19 @@ import {
     IconDeviceFloppy,
     IconX,
 } from '@tabler/icons-react';
-import DeploymentNodeComponent from '../components/workflow/DeploymentNode';
-import ServiceNodeComponent from '../components/workflow/ServiceNode';
+import CompactNodeComponent from '../components/workflow/CompactNode';
+import NodeConfigModal from '../components/workflow/NodeConfigModal';
 import NodePalette from '../components/workflow/NodePalette';
 import { workflowsApi, connectionApi } from '../api/services';
 import { useRBACStore } from '../store/rbacStore';
 
+/* All four resource types use the same compact canvas node.
+   React Flow resolves the `type` string and passes it as a prop. */
 const nodeTypes = {
-    deployment: DeploymentNodeComponent,
-    service: ServiceNodeComponent,
+    deployment: CompactNodeComponent,
+    service: CompactNodeComponent,
+    ingress: CompactNodeComponent,
+    configmap: CompactNodeComponent,
 };
 
 /** Derive the next safe node ID from the current set of nodes. */
@@ -58,7 +63,6 @@ function saveCanvas(clusterId: string, nodes: Node[], edges: Edge[]) {
             id: n.id,
             type: n.type as string,
             position: n.position,
-            // Strip the onChange fn — functions can't be JSON serialised
             data: Object.fromEntries(
                 Object.entries(n.data as Record<string, unknown>).filter(([k]) => k !== 'onChange')
             ),
@@ -102,15 +106,14 @@ function WorkspaceCanvas() {
     const [saving, setSaving] = useState(false);
     const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
+    // ── Modal state ──────────────────────────────────────────────
+    const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+
     const { deleteElements } = useReactFlow();
 
-    // A stable ref that always holds the latest edges — used inside handleNodeDataChange
-    // to avoid adding `edges` as a dependency (which would cause an infinite update loop
-    // because handleNodeDataChange is stored inside node.data.onChange).
     const edgesRef = useRef<Edge[]>(edges);
     useEffect(() => { edgesRef.current = edges; }, [edges]);
 
-    // Count selected nodes + edges for the Delete Selected button
     const selectedCount =
         nodes.filter((n) => n.selected).length +
         edges.filter((e) => e.selected).length;
@@ -123,54 +126,72 @@ function WorkspaceCanvas() {
         (nodeId: string, newData: Record<string, unknown>) => {
             setNodes((nds: Node[]) => {
                 // 1. Apply the change to the node itself
-                const updated = nds.map((node: Node) =>
+                let updated = nds.map((node: Node) =>
                     node.id === nodeId
                         ? { ...node, data: { ...node.data, ...newData } }
                         : node
                 );
 
-                // 2. If the changed node is a Deployment and a sync-relevant field
-                //    changed, propagate to all directly connected Service nodes.
-                //    Read edges from edgesRef (not from closure) to keep this
-                //    callback stable and prevent infinite re-render loops.
                 const changedNode = updated.find((n) => n.id === nodeId);
-                if (changedNode?.type !== 'deployment') return updated;
-
-                const syncFields = ['name', 'port', 'namespace'] as const;
-                const hasSyncableChange = syncFields.some((f) => f in newData);
-                if (!hasSyncableChange) return updated;
-
                 const currentEdges = edgesRef.current;
-                const connectedServiceIds = new Set(
-                    currentEdges
-                        .filter((e) => e.source === nodeId || e.target === nodeId)
-                        .map((e) => (e.source === nodeId ? e.target : e.source))
-                        .filter((id) => {
-                            const n = updated.find((x) => x.id === id);
-                            return n?.type === 'service';
-                        })
-                );
 
-                if (connectedServiceIds.size === 0) return updated;
+                // 2. Deployment → Service sync
+                if (changedNode?.type === 'deployment') {
+                    const syncFields = ['name', 'port', 'namespace'] as const;
+                    const hasSyncableChange = syncFields.some((f) => f in newData);
+                    if (hasSyncableChange) {
+                        const connectedServiceIds = new Set(
+                            currentEdges
+                                .filter((e) => e.source === nodeId || e.target === nodeId)
+                                .map((e) => (e.source === nodeId ? e.target : e.source))
+                                .filter((id) => updated.find((x) => x.id === id)?.type === 'service')
+                        );
+                        if (connectedServiceIds.size > 0) {
+                            const d = changedNode.data as Record<string, unknown>;
+                            updated = updated.map((n) => {
+                                if (!connectedServiceIds.has(n.id)) return n;
+                                const patch: Record<string, unknown> = {};
+                                if ('name' in newData) patch.selector = (d.name as string) || '';
+                                if ('port' in newData) patch.target_port = (d.port as number) ?? 80;
+                                if ('namespace' in newData) patch.namespace = (d.namespace as string) || '';
+                                return { ...n, data: { ...n.data, ...patch } };
+                            });
+                        }
+                    }
+                }
 
-                const d = changedNode.data as Record<string, unknown>;
-                return updated.map((n) => {
-                    if (!connectedServiceIds.has(n.id)) return n;
-                    const patch: Record<string, unknown> = {};
-                    if ('name' in newData) patch.selector = (d.name as string) || '';
-                    if ('port' in newData) patch.target_port = (d.port as number) ?? 80;
-                    if ('namespace' in newData) patch.namespace = (d.namespace as string) || '';
-                    return { ...n, data: { ...n.data, ...patch } };
-                });
+                // 3. Service → Ingress sync
+                if (changedNode?.type === 'service') {
+                    const syncFields = ['name', 'port'] as const;
+                    const hasSyncableChange = syncFields.some((f) => f in newData);
+                    if (hasSyncableChange) {
+                        const connectedIngressIds = new Set(
+                            currentEdges
+                                .filter((e) => e.source === nodeId || e.target === nodeId)
+                                .map((e) => (e.source === nodeId ? e.target : e.source))
+                                .filter((id) => updated.find((x) => x.id === id)?.type === 'ingress')
+                        );
+                        if (connectedIngressIds.size > 0) {
+                            const s = changedNode.data as Record<string, unknown>;
+                            updated = updated.map((n) => {
+                                if (!connectedIngressIds.has(n.id)) return n;
+                                const patch: Record<string, unknown> = {};
+                                if ('name' in newData) patch.service_name = (s.name as string) || '';
+                                if ('port' in newData) patch.service_port = (s.port as number) ?? 80;
+                                return { ...n, data: { ...n.data, ...patch } };
+                            });
+                        }
+                    }
+                }
+
+                return updated;
             });
         },
-        [setNodes]  // stable — edgesRef is a ref, not a reactive dep
+        [setNodes]
     );
 
     const isValidConnection = useCallback((connection: Edge | Connection) => {
-        // Block self-loops
         if (connection.source === connection.target) return false;
-        // Block duplicate edges (both directions) between the same pair
         const hasDuplicate = edgesRef.current.some(
             (e) =>
                 (e.source === connection.source && e.target === connection.target) ||
@@ -183,7 +204,6 @@ function WorkspaceCanvas() {
     useEffect(() => {
         if (!clusterId) return;
 
-        // Step 1: immediately restore saved canvas (preserves positions)
         const saved = loadCanvas(clusterId);
         if (saved) {
             const restoredNodes: Node[] = saved.nodes.map((n) => ({
@@ -199,21 +219,18 @@ function WorkspaceCanvas() {
             setEdges(restoredEdges);
         }
 
-        // Step 2: also fetch latest data from backend to merge node field values
-        // (in case deployments/services were modified server-side)
         workflowsApi.list(clusterId).then((res) => {
-            // Handle both flat { deployments } and wrapped { data: { deployments } } shapes
             const wf = res.data?.workflow ?? res.data?.data ?? res.data;
-            if (!wf?.deployments && !wf?.services) return;
+            if (!wf?.deployments && !wf?.services && !wf?.ingresses && !wf?.configmaps) return;
 
             if (saved) {
-                // Merge: update data fields from API but keep saved positions
                 setNodes((current: Node[]) =>
                     current.map((node: Node) => {
-                        const apiNode =
-                            node.type === 'deployment'
-                                ? (wf.deployments || []).find((d: any) => d.id === node.id)
-                                : (wf.services || []).find((s: any) => s.id === node.id);
+                        let apiNode: any = null;
+                        if (node.type === 'deployment') apiNode = (wf.deployments || []).find((d: any) => d.id === node.id);
+                        else if (node.type === 'service') apiNode = (wf.services || []).find((s: any) => s.id === node.id);
+                        else if (node.type === 'ingress') apiNode = (wf.ingresses || []).find((i: any) => i.id === node.id);
+                        else if (node.type === 'configmap') apiNode = (wf.configmaps || []).find((c: any) => c.id === node.id);
                         if (!apiNode) return node;
                         return {
                             ...node,
@@ -222,7 +239,6 @@ function WorkspaceCanvas() {
                     })
                 );
             } else {
-                // No saved canvas — build from API data with default positions
                 const loaded: Node[] = [];
                 let x = 100;
                 (wf.deployments || []).forEach((d: any) => {
@@ -240,6 +256,24 @@ function WorkspaceCanvas() {
                         type: 'service',
                         position: { x, y: 300 },
                         data: { ...s, onChange: handleNodeDataChange },
+                    });
+                    x += 320;
+                });
+                (wf.ingresses || []).forEach((ing: any) => {
+                    loaded.push({
+                        id: ing.id || getNextNodeId(loaded),
+                        type: 'ingress',
+                        position: { x, y: 100 },
+                        data: { ...ing, onChange: handleNodeDataChange },
+                    });
+                    x += 320;
+                });
+                (wf.configmaps || []).forEach((cm: any) => {
+                    loaded.push({
+                        id: cm.id || getNextNodeId(loaded),
+                        type: 'configmap',
+                        position: { x, y: 300 },
+                        data: { ...cm, onChange: handleNodeDataChange },
                     });
                     x += 320;
                 });
@@ -263,43 +297,61 @@ function WorkspaceCanvas() {
     // auto-synced fields (selector, target_port, namespace) on the Service.
     const handleEdgesChange = useCallback(
         (changes: any[]) => {
-            // Detect removed edges before they disappear
             const removedEdges = changes
                 .filter((c: any) => c.type === 'remove')
                 .map((c: any) => edgesRef.current.find((e) => e.id === c.id))
                 .filter(Boolean) as Edge[];
 
-            // Apply the edge changes first
             onEdgesChange(changes);
 
             if (removedEdges.length === 0) return;
 
-            // For each removed edge, check if it linked a deployment ↔ service
             setNodes((nds: Node[]) => {
                 let updated = nds;
                 for (const edge of removedEdges) {
                     const src = updated.find((n) => n.id === edge.source);
                     const tgt = updated.find((n) => n.id === edge.target);
+
+                    // Deployment ↔ Service: clear selector/target_port on Service
                     const service = src?.type === 'service' ? src : tgt?.type === 'service' ? tgt : null;
                     const deployment = src?.type === 'deployment' ? src : tgt?.type === 'deployment' ? tgt : null;
-                    if (!service || !deployment) continue;
-
-                    // Check if the service still has another edge to a deployment
-                    const remainingEdges = edgesRef.current.filter(
-                        (e) => e.id !== edge.id &&
-                            (e.source === service.id || e.target === service.id)
-                    );
-                    const stillConnected = remainingEdges.some((e) => {
-                        const otherId = e.source === service.id ? e.target : e.source;
-                        return updated.find((n) => n.id === otherId)?.type === 'deployment';
-                    });
-
-                    if (!stillConnected) {
-                        updated = updated.map((n) =>
-                            n.id === service.id
-                                ? { ...n, data: { ...n.data, selector: '', target_port: 80 } }
-                                : n
+                    if (service && deployment) {
+                        const remainingEdges = edgesRef.current.filter(
+                            (e) => e.id !== edge.id &&
+                                (e.source === service.id || e.target === service.id)
                         );
+                        const stillConnected = remainingEdges.some((e) => {
+                            const otherId = e.source === service.id ? e.target : e.source;
+                            return updated.find((n) => n.id === otherId)?.type === 'deployment';
+                        });
+                        if (!stillConnected) {
+                            updated = updated.map((n) =>
+                                n.id === service.id
+                                    ? { ...n, data: { ...n.data, selector: '', target_port: 80 } }
+                                    : n
+                            );
+                        }
+                    }
+
+                    // Service ↔ Ingress: clear service_name/service_port on Ingress
+                    const svcNode = src?.type === 'service' ? src : tgt?.type === 'service' ? tgt : null;
+                    const ingress = src?.type === 'ingress' ? src : tgt?.type === 'ingress' ? tgt : null;
+                    if (svcNode && ingress) {
+                        const remainingEdges = edgesRef.current.filter(
+                            (e) => e.id !== edge.id &&
+                                (e.source === ingress.id || e.target === ingress.id)
+                        );
+                        const stillConnected = remainingEdges.some((e) => {
+                            const otherId = e.source === ingress.id ? e.target : e.source;
+                            return updated.find((n) => n.id === otherId)?.type === 'service';
+                        });
+                        if (!stillConnected) {
+                            updated = updated.map((n) =>
+                                n.id === ingress.id
+                                    ? { ...n, data: { ...n.data, service_name: '', service_port: 80 } }
+                                    : n
+                            );
+                        }
                     }
                 }
                 return updated;
@@ -310,41 +362,61 @@ function WorkspaceCanvas() {
 
     const onConnect = useCallback(
         (params: Connection) => {
-            // Add the edge first (with consistent styling)
             setEdges((eds: Edge[]) =>
                 addEdge({ ...params, animated: true, style: { stroke: 'var(--color-accent)', strokeWidth: 2 } }, eds)
             );
 
-            // Auto-sync fields between a connected Deployment ↔ Service pair
             setNodes((nds: Node[]) => {
                 const src = nds.find((n) => n.id === params.source);
                 const tgt = nds.find((n) => n.id === params.target);
                 if (!src || !tgt) return nds;
 
-                // Work out which node is the deployment and which is the service
+                let result = nds;
+
+                // Deployment ↔ Service: sync selector, target_port, namespace
                 const deployment = src.type === 'deployment' ? src
                     : tgt.type === 'deployment' ? tgt : null;
                 const service = src.type === 'service' ? src
                     : tgt.type === 'service' ? tgt : null;
 
-                if (!deployment || !service) return nds;  // same-type connection — no sync
+                if (deployment && service) {
+                    const d = deployment.data as Record<string, unknown>;
+                    result = result.map((n) => {
+                        if (n.id !== service.id) return n;
+                        return {
+                            ...n,
+                            data: {
+                                ...n.data,
+                                selector: (d.name as string) || (n.data as Record<string, unknown>).selector,
+                                target_port: (d.port as number) ?? (n.data as Record<string, unknown>).target_port,
+                                namespace: (d.namespace as string) || (n.data as Record<string, unknown>).namespace,
+                            },
+                        };
+                    });
+                }
 
-                const d = deployment.data as Record<string, unknown>;
-                return nds.map((n) => {
-                    if (n.id !== service.id) return n;
-                    return {
-                        ...n,
-                        data: {
-                            ...n.data,
-                            // selector must match the Deployment's app label (its name)
-                            selector: (d.name as string) || (n.data as Record<string, unknown>).selector,
-                            // target_port must point at the container port
-                            target_port: (d.port as number) ?? (n.data as Record<string, unknown>).target_port,
-                            // keep namespace in sync
-                            namespace: (d.namespace as string) || (n.data as Record<string, unknown>).namespace,
-                        },
-                    };
-                });
+                // Service ↔ Ingress: sync service_name, service_port
+                const svcNode = src.type === 'service' ? src
+                    : tgt.type === 'service' ? tgt : null;
+                const ingress = src.type === 'ingress' ? src
+                    : tgt.type === 'ingress' ? tgt : null;
+
+                if (svcNode && ingress) {
+                    const s = svcNode.data as Record<string, unknown>;
+                    result = result.map((n) => {
+                        if (n.id !== ingress.id) return n;
+                        return {
+                            ...n,
+                            data: {
+                                ...n.data,
+                                service_name: (s.name as string) || (n.data as Record<string, unknown>).service_name,
+                                service_port: (s.port as number) ?? (n.data as Record<string, unknown>).service_port,
+                            },
+                        };
+                    });
+                }
+
+                return result;
             });
         },
         [setEdges, setNodes]
@@ -361,25 +433,26 @@ function WorkspaceCanvas() {
             const type = event.dataTransfer.getData('application/reactflow-type');
             if (!type || !reactFlowInstance || !reactFlowWrapper.current) return;
 
-            // @xyflow/react v12+ screenToFlowPosition already accounts for
-            // the wrapper offset, so pass raw client coords.
             const position = reactFlowInstance.screenToFlowPosition({
                 x: event.clientX,
                 y: event.clientY,
             });
             setNodes((nds: Node[]) => {
                 const newId = getNextNodeId(nds);
-                const data: any =
-                    type === 'deployment'
-                        ? {
+                let data: any;
+                switch (type) {
+                    case 'deployment':
+                        data = {
                             name: '',
                             namespace: 'default',
                             image: '',
                             replicas: 1,
                             port: 80,
                             onChange: handleNodeDataChange,
-                        }
-                        : {
+                        };
+                        break;
+                    case 'service':
+                        data = {
                             name: '',
                             namespace: 'default',
                             protocol: 'TCP',
@@ -387,6 +460,31 @@ function WorkspaceCanvas() {
                             target_port: 80,
                             onChange: handleNodeDataChange,
                         };
+                        break;
+                    case 'ingress':
+                        data = {
+                            name: '',
+                            namespace: 'default',
+                            host: '',
+                            path: '/',
+                            path_type: 'Prefix',
+                            target_port: 80,
+                            service_name: '',
+                            service_port: 80,
+                            onChange: handleNodeDataChange,
+                        };
+                        break;
+                    case 'configmap':
+                        data = {
+                            name: '',
+                            namespace: 'default',
+                            data: {},
+                            onChange: handleNodeDataChange,
+                        };
+                        break;
+                    default:
+                        data = { onChange: handleNodeDataChange };
+                }
 
                 const newNode: Node = {
                     id: newId,
@@ -400,6 +498,18 @@ function WorkspaceCanvas() {
         },
         [reactFlowInstance, handleNodeDataChange, setNodes]
     );
+
+    // ── Double-click → open config modal ─────────────────────────
+    const onNodeDoubleClick: NodeMouseHandler = useCallback((_event, node) => {
+        setEditingNodeId(node.id);
+    }, []);
+
+    const handleModalClose = useCallback(() => {
+        setEditingNodeId(null);
+    }, []);
+
+    // Resolve the node being edited
+    const editingNode = editingNodeId ? nodes.find((n) => n.id === editingNodeId) : null;
 
     // Apply workflow
     const handleApply = async () => {
@@ -429,6 +539,29 @@ function WorkspaceCanvas() {
                 target_port: (n.data as Record<string, unknown>).target_port as number ?? 80,
             }));
 
+        const ingresses = nodes
+            .filter((n: Node) => n.type === 'ingress')
+            .map((n: Node) => ({
+                id: n.id,
+                name: (n.data as Record<string, unknown>).name as string || '',
+                namespace: (n.data as Record<string, unknown>).namespace as string || 'default',
+                host: (n.data as Record<string, unknown>).host as string || '',
+                path: (n.data as Record<string, unknown>).path as string || '/',
+                path_type: (n.data as Record<string, unknown>).path_type as string || 'Prefix',
+                target_port: (n.data as Record<string, unknown>).target_port as number ?? 80,
+                service_name: (n.data as Record<string, unknown>).service_name as string || '',
+                service_port: (n.data as Record<string, unknown>).service_port as number ?? 80,
+            }));
+
+        const configmaps = nodes
+            .filter((n: Node) => n.type === 'configmap')
+            .map((n: Node) => ({
+                id: n.id,
+                name: (n.data as Record<string, unknown>).name as string || '',
+                namespace: (n.data as Record<string, unknown>).namespace as string || 'default',
+                data: (n.data as Record<string, unknown>).data as Record<string, string> || {},
+            }));
+
         const workflowEdges = edges.map((e: Edge) => ({
             source_id: e.source,
             target_id: e.target,
@@ -440,6 +573,8 @@ function WorkspaceCanvas() {
             workflow: {
                 deployments,
                 services,
+                ingresses,
+                configmaps,
                 edges: workflowEdges,
             },
         };
@@ -452,11 +587,11 @@ function WorkspaceCanvas() {
                 workflow: {
                     deployments,
                     services,
+                    ingresses,
+                    configmaps,
                     edges: workflowEdges,
                 },
             });
-            // Persist the canvas state (nodes with positions + edges) to localStorage
-            // `nodes` and `edges` are already current at handleApply call time
             saveCanvas(clusterId, nodes, edges);
             setStatusMsg('Workflow applied successfully!');
         } catch (err: any) {
@@ -468,7 +603,6 @@ function WorkspaceCanvas() {
         }
     };
 
-    // Save canvas to localStorage only (no Kubernetes deploy)
     const handleSave = () => {
         if (!clusterId) return;
         setSaving(true);
@@ -477,14 +611,12 @@ function WorkspaceCanvas() {
         setTimeout(() => { setStatusMsg(null); setSaving(false); }, 2000);
     };
 
-    // Delete all currently selected nodes and edges
     const handleDeleteSelected = useCallback(() => {
         const selectedNodes = nodes.filter((n) => n.selected);
         const selectedEdges = edges.filter((e) => e.selected);
         deleteElements({ nodes: selectedNodes, edges: selectedEdges });
     }, [nodes, edges, deleteElements]);
 
-    // Disconnect and go back
     const handleBack = async () => {
         if (clusterId) {
             try { await connectionApi.disconnect(clusterId); } catch { /* ignore */ }
@@ -567,6 +699,7 @@ function WorkspaceCanvas() {
                         onInit={setReactFlowInstance}
                         onDragOver={onDragOver}
                         onDrop={onDrop}
+                        onNodeDoubleClick={onNodeDoubleClick}
                         fitView
                         snapToGrid
                         snapGrid={[16, 16]}
@@ -584,13 +717,30 @@ function WorkspaceCanvas() {
                                 border: '1px solid var(--color-border-dark)',
                             }}
                             maskColor="rgba(0,0,0,0.6)"
-                            nodeColor={(node: Node) =>
-                                node.type === 'deployment' ? '#3b82f6' : '#10b981'
-                            }
+                            nodeColor={(node: Node) => {
+                                switch (node.type) {
+                                    case 'deployment': return '#3b82f6';
+                                    case 'service': return '#10b981';
+                                    case 'ingress': return '#8b5cf6';
+                                    case 'configmap': return '#f59e0b';
+                                    default: return '#6366f1';
+                                }
+                            }}
                         />
                     </ReactFlow>
                 </div>
             </div>
+
+            {/* Config modal — shown when a node is double-clicked */}
+            {editingNode && (
+                <NodeConfigModal
+                    nodeId={editingNode.id}
+                    nodeType={editingNode.type || 'deployment'}
+                    nodeData={editingNode.data as unknown as Record<string, unknown>}
+                    onChange={handleNodeDataChange}
+                    onClose={handleModalClose}
+                />
+            )}
         </div>
     );
 }

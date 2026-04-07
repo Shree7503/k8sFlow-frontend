@@ -427,7 +427,7 @@ a:hover {
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background: var(--color-bg-darker, #1a1d23);
+  background: #2b2b2b;
   overflow: hidden;
 }
 
@@ -710,7 +710,7 @@ a:hover {
   cursor: default;
 }
 .workspace-canvas .react-flow__background {
-  background: var(--color-bg-darker, #1a1d23) !important;
+  background: #2b2b2b !important;
 }
 .workspace-controls button {
   background: var(--color-panel-dark, #111118) !important;
@@ -724,104 +724,85 @@ a:hover {
 }
 
 /* ═══════════════════════════════════════════════════
-   WORKFLOW NODES (custom)
+   COMPACT CANVAS NODES
    ═══════════════════════════════════════════════════ */
 
-.workflow-node {
-  min-width: 240px;
+.compact-node {
+  min-width: 180px;
+  max-width: 220px;
   background: var(--color-panel-dark, #111118);
   border: 1px solid var(--color-border-dark, #1e1e2e);
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+  cursor: pointer;
 }
-.workflow-node:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+.compact-node:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  border-color: var(--node-border-hover, #3b82f680);
+  transform: translateY(-1px);
 }
 
-/* Node headers */
-.workflow-node-header {
+/* Thin gradient accent bar at top */
+.compact-node__accent {
+  height: 3px;
+  background: linear-gradient(90deg, var(--node-color, #3b82f6), var(--node-color-to, #2563eb));
+}
+
+.compact-node__body {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  font-size: 11px;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.compact-node__icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.compact-node__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.compact-node__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-node__subtitle {
+  font-size: 10px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.compact-node__badge {
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #fff;
-}
-.deployment-header {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-.service-header {
-  background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.deployment-node:hover {
-  border-color: #3b82f680;
-}
-.service-node:hover {
-  border-color: #10b98180;
-}
-
-/* Node body */
-.workflow-node-body {
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.workflow-node-body label {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.workflow-node-body label span {
-  font-size: 10px;
-  color: var(--color-text-muted, #666);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.workflow-node-body input,
-.workflow-node-body select {
-  width: 100%;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--color-border-dark, #1e1e2e);
-  background: var(--color-bg-darker, #1a1d23);
-  color: #e0e0e0;
-  font-size: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.workflow-node-body input:focus,
-.workflow-node-body select:focus {
-  border-color: var(--color-accent, #6366f1);
-}
-.workflow-node-body input::placeholder {
-  color: #444;
-}
-
-/* Auto-synced field — subtle teal tint to signal it's managed by a connection */
-.workflow-node-body input.field-synced {
-  border-color: #2a4a3a;
-  background: #1a2820;
-  color: #7ec86c;
-}
-.workflow-node-body input.field-synced:focus {
-  border-color: #3a6a50;
-}
-
-.workflow-node-row {
-  display: flex;
-  gap: 8px;
-}
-.workflow-node-row label.half {
-  flex: 1;
+  letter-spacing: 0.4px;
+  color: var(--node-color, #3b82f6);
+  background: color-mix(in srgb, var(--node-color, #3b82f6) 12%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Connection handles */
@@ -842,3 +823,285 @@ a:hover {
   stroke: var(--color-accent, #6366f1) !important;
   stroke-width: 2 !important;
 }
+
+/* ═══════════════════════════════════════════════════
+   NODE CONFIG MODAL
+   ═══════════════════════════════════════════════════ */
+
+.node-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.18s ease;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.node-modal {
+  width: 420px;
+  max-height: 80vh;
+  background: var(--color-panel-dark, #111118);
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: modalSlideIn 0.2s ease;
+}
+
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.node-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  color: #fff;
+}
+
+.node-modal__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.node-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.node-modal__close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Body */
+.node-modal__body {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.node-modal__body label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.node-modal__body label span {
+  font-size: 10px;
+  color: var(--color-text-muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+.node-modal__body input,
+.node-modal__body select {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: var(--color-bg-darker, #1a1d23);
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.node-modal__body input:focus,
+.node-modal__body select:focus {
+  border-color: var(--color-accent, #6366f1);
+}
+.node-modal__body input::placeholder {
+  color: #444;
+}
+
+/* Auto-synced field */
+.node-modal__body input.field-synced {
+  border-color: #2a4a3a;
+  background: #1a2820;
+  color: #7ec86c;
+}
+.node-modal__body input.field-synced:focus {
+  border-color: #3a6a50;
+}
+
+.modal-form-row {
+  display: flex;
+  gap: 10px;
+}
+.modal-form-row label.half {
+  flex: 1;
+}
+
+/* Footer */
+.node-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border-dark, #1e1e2e);
+}
+
+.node-modal__id {
+  font-size: 10px;
+  color: #555;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.node-modal__done-btn {
+  padding: 6px 18px;
+  border-radius: 7px;
+  border: none;
+  background: #214283;
+  color: #9ab8f3;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.node-modal__done-btn:hover {
+  background: #2a508f;
+  color: #c8dbff;
+}
+
+/* Cluster Details Panel — slow gear spin */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* ─── ConfigMap Data Editor (used inside modal) ─── */
+.configmap-data-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.configmap-data-label {
+  font-size: 10px;
+  color: var(--color-text-muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+.configmap-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.configmap-entry input.configmap-key,
+.configmap-entry input.configmap-value {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-dark, #1e1e2e);
+  background: var(--color-bg-darker, #1a1d23);
+  color: #e0e0e0;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.configmap-entry input.configmap-key {
+  color: #f59e0b;
+}
+
+.configmap-entry input:focus {
+  border-color: var(--color-accent, #6366f1);
+}
+
+.configmap-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: #855555;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.configmap-remove-btn:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+
+.configmap-add-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.configmap-add-row input.configmap-new-key {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--color-border-dark, #1e1e2e);
+  background: transparent;
+  color: #aaa;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.configmap-add-row input.configmap-new-key:focus {
+  border-color: #f59e0b;
+}
+
+.configmap-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: 1px dashed var(--color-border-dark, #1e1e2e);
+  background: transparent;
+  color: #6a9955;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.configmap-add-btn:hover {
+  background: rgba(106, 153, 85, 0.12);
+  color: #7ec86c;
+  border-color: #3a5c3a;
+}
+
