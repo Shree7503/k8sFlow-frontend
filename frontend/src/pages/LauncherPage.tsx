@@ -204,6 +204,7 @@ export default function LauncherPage() {
                   key={cluster.clusterId}
                   name={cluster.clusterName}
                   context={cluster.context}
+                  clusterId={cluster.clusterId}
                   status={cluster.status}
                   lastConnected={cluster.lastConnected}
                   clusterRole={cluster.role}

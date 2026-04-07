@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import {
   IconSettings,
   IconX,
@@ -6,18 +7,28 @@ import {
   IconBrandAzure,
   IconCloud,
   IconServer,
-  IconCpu
+  IconCpu,
+  IconChevronUp,
+  IconNetwork,
+  IconCalendar,
+  IconShieldCheck,
+  IconCircleDot,
+  IconTag,
+  IconCopy,
+  IconCheck,
 } from '@tabler/icons-react';
 import { Card } from './ui/card';
 import RoleBadge from './RoleBadge';
-import { SystemRole, type SystemRoleValue } from '../types/rbac';
-import { canModifyCluster, canAdminCluster } from '../utils/rbac';
+import { SystemRole, ROLE_LABELS, type SystemRoleValue } from '../types/rbac';
+import { canAdminCluster } from '../utils/rbac';
 
 interface ClusterCardProps {
   name: string;
   context: string;
   status: 'connected' | 'disconnected' | 'error';
   lastConnected?: string;
+  /** Cluster ID for display */
+  clusterId?: string;
   /** User's cluster-specific role */
   clusterRole?: SystemRoleValue;
   /** User's system-wide role */
@@ -46,22 +57,60 @@ const getProviderIcon = (context: string) => {
   return <IconCloud size={24} className="text-[var(--color-accent)]" />;
 };
 
+const getProviderLabel = (context: string): string => {
+  const lowerContext = context.toLowerCase();
+  if (lowerContext.includes('aws') || lowerContext.includes('eks')) return 'Amazon EKS';
+  if (lowerContext.includes('gke') || lowerContext.includes('google')) return 'Google GKE';
+  if (lowerContext.includes('azure') || lowerContext.includes('aks')) return 'Azure AKS';
+  if (lowerContext.includes('minikube')) return 'Minikube';
+  if (lowerContext.includes('docker')) return 'Docker Desktop';
+  if (lowerContext.includes('kind')) return 'KinD';
+  return 'Custom Provider';
+};
+
 export default function ClusterCard({
   name,
   context,
   status,
   lastConnected,
+  clusterId,
   clusterRole,
   systemRole,
   onConnect,
   onEdit,
   onDelete
 }: ClusterCardProps) {
-  const canEdit = canModifyCluster(systemRole, clusterRole);
+  const [showDetails, setShowDetails] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelHeight, setPanelHeight] = useState(0);
+
   const canAdmin = canAdminCluster(systemRole, clusterRole);
 
   const isConnected = status === 'connected';
   const isError = status === 'error';
+
+  // Measure the panel's scroll height for smooth animation
+  useEffect(() => {
+    if (panelRef.current) {
+      setPanelHeight(panelRef.current.scrollHeight);
+    }
+  }, [showDetails]);
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
+
+  const handleSettingsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDetails(!showDetails);
+  };
+
+  // Effective role for display
+  const effectiveRole = systemRole === SystemRole.Admin ? SystemRole.Admin : clusterRole;
+  const effectiveRoleLabel = effectiveRole !== undefined ? ROLE_LABELS[effectiveRole as SystemRoleValue] : 'N/A';
 
   // Base card styling
   const cardBase = "cluster-card relative group transition-all duration-300 border bg-[var(--color-panel-dark)]";
@@ -72,6 +121,51 @@ export default function ClusterCard({
     : isError
       ? "border-l-4 border-l-[var(--color-error)] hover:shadow-[0_0_15px_rgba(244,67,54,0.15)] opacity-90"
       : "border-l-4 border-l-[var(--color-border-dark)] hover:border-l-[var(--color-accent)] hover:shadow-lg opacity-80 hover:opacity-100";
+
+  // Detail rows for the panel
+  const detailRows = [
+    {
+      icon: <IconTag size={14} />,
+      label: 'Cluster Name',
+      value: name,
+      copyable: true,
+    },
+    ...(clusterId ? [{
+      icon: <IconCircleDot size={14} />,
+      label: 'Cluster ID',
+      value: clusterId,
+      copyable: true,
+    }] : []),
+    {
+      icon: <IconNetwork size={14} />,
+      label: 'Provider / Context',
+      value: `${getProviderLabel(context)} — ${context}`,
+      copyable: true,
+    },
+    {
+      icon: <IconCircleDot size={14} />,
+      label: 'Status',
+      value: status.charAt(0).toUpperCase() + status.slice(1),
+      copyable: false,
+      statusColor: isConnected
+        ? 'text-[var(--color-success)]'
+        : isError
+          ? 'text-[var(--color-error)]'
+          : 'text-zinc-400',
+    },
+    {
+      icon: <IconShieldCheck size={14} />,
+      label: 'Your Role',
+      value: effectiveRoleLabel,
+      copyable: false,
+    },
+    {
+      icon: <IconCalendar size={14} />,
+      label: 'Last Seen',
+      value: lastConnected || 'Never',
+      copyable: false,
+    },
+  ];
 
   return (
     <Card className={`${cardBase} ${statusEffects} overflow-hidden`}>
@@ -127,6 +221,72 @@ export default function ClusterCard({
           </div>
         </div>
 
+        {/* ═══ DETAILS PANEL (slide-down) ═══ */}
+        <div
+          className="overflow-hidden transition-all duration-300 ease-in-out"
+          style={{ maxHeight: showDetails ? `${panelHeight}px` : '0px' }}
+        >
+          <div ref={panelRef}>
+            <div className="mt-3 rounded-lg border border-[var(--color-border-dark)] bg-[var(--color-bg-dark)]/70 backdrop-blur-sm overflow-hidden">
+              {/* Panel header */}
+              <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--color-border-dark)] bg-[var(--color-bg-dark)]">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                  Cluster Details
+                </span>
+                <button
+                  onClick={handleSettingsClick}
+                  className="p-0.5 rounded hover:bg-[var(--color-hover-dark)] text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  <IconChevronUp size={14} />
+                </button>
+              </div>
+
+              {/* Detail rows */}
+              <div className="divide-y divide-[var(--color-border-dark)]/50">
+                {detailRows.map((row, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between px-3 py-2 hover:bg-[var(--color-hover-dark)]/50 transition-colors group/row"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-zinc-500 flex-shrink-0">{row.icon}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium flex-shrink-0">
+                        {row.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-4 min-w-0">
+                      <span
+                        className={`font-mono text-[11px] truncate max-w-[180px] ${
+                          (row as any).statusColor ?? 'text-zinc-300'
+                        }`}
+                        title={row.value}
+                      >
+                        {row.value}
+                      </span>
+                      {row.copyable && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(row.value, row.label);
+                          }}
+                          className="opacity-0 group-hover/row:opacity-100 p-0.5 rounded hover:bg-[var(--color-hover-dark)] text-zinc-500 hover:text-zinc-300 transition-all"
+                          title={`Copy ${row.label}`}
+                        >
+                          {copiedField === row.label ? (
+                            <IconCheck size={12} className="text-[var(--color-success)]" />
+                          ) : (
+                            <IconCopy size={12} />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Footer: Actions & Timestamp */}
         <div className="mt-4 pt-3 border-t border-[var(--color-border-dark)] flex items-center justify-between">
           <div className="text-[10px] text-zinc-500 font-mono">
@@ -147,15 +307,15 @@ export default function ClusterCard({
             <div className="flex gap-1 ml-2 border-l border-[var(--color-border-dark)] pl-2">
               {onEdit && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); canEdit && onEdit(); }}
-                  disabled={!canEdit}
-                  className={`p-1.5 rounded transition-all ${canEdit
-                    ? 'hover:bg-[var(--color-hover-dark)] hover:text-[var(--color-accent)] text-gray-400'
-                    : 'opacity-20 cursor-not-allowed'
-                    }`}
-                  title={canEdit ? 'Edit Configuration' : 'Editor role required'}
+                  onClick={handleSettingsClick}
+                  className={`p-1.5 rounded transition-all ${
+                    showDetails
+                      ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/30'
+                      : 'hover:bg-[var(--color-hover-dark)] hover:text-[var(--color-accent)] text-gray-400'
+                  }`}
+                  title="Cluster Details"
                 >
-                  <IconSettings size={16} />
+                  <IconSettings size={16} className={showDetails ? 'animate-spin-slow' : ''} />
                 </button>
               )}
               {onDelete && (

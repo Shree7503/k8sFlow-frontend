@@ -162,6 +162,25 @@ export interface ServiceNode {
   target_port: number;
 }
 
+export interface IngressNode {
+  id: string;
+  name: string;
+  namespace: string;
+  host: string;
+  path: string;
+  path_type: string;
+  target_port: number;
+  service_name: string;
+  service_port: number;
+}
+
+export interface ConfigMapNode {
+  id: string;
+  name: string;
+  namespace: string;
+  data: Record<string, string>;
+}
+
 export interface WorkflowEdge {
   source_id: string;
   target_id: string;
@@ -170,6 +189,8 @@ export interface WorkflowEdge {
 export interface Workflow {
   deployments: DeploymentNode[];
   services: ServiceNode[];
+  ingresses?: IngressNode[];
+  configmaps?: ConfigMapNode[];
   edges: WorkflowEdge[];
 }
 
