@@ -24,10 +24,13 @@ import {
     IconLoader2,
     IconDeviceFloppy,
     IconX,
+    IconSparkles,
 } from '@tabler/icons-react';
 import CompactNodeComponent from '../components/workflow/CompactNode';
 import NodeConfigModal from '../components/workflow/NodeConfigModal';
 import NodePalette from '../components/workflow/NodePalette';
+import AIChatPanel from '../components/workflow/AIChatPanel';
+import type { Workflow } from '../components/workflow/AIChatPanel';
 import { workflowsApi, connectionApi } from '../api/services';
 import { useRBACStore } from '../store/rbacStore';
 
@@ -108,6 +111,9 @@ function WorkspaceCanvas() {
 
     // ── Modal state ──────────────────────────────────────────────
     const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+
+    // ── AI Chat Panel state ──────────────────────────────────────
+    const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
     const { deleteElements } = useReactFlow();
 
@@ -617,6 +623,71 @@ function WorkspaceCanvas() {
         deleteElements({ nodes: selectedNodes, edges: selectedEdges });
     }, [nodes, edges, deleteElements]);
 
+    // ── AI workflow → canvas loader ──────────────────────────────
+    const loadAIWorkflow = useCallback((workflow: Workflow) => {
+        const newNodes: Node[] = [];
+        let x = 100;
+        const yDeploy = 100;
+        const yService = 300;
+
+        // Map deployments
+        workflow.deployments?.forEach((d) => {
+            newNodes.push({
+                id: d.id,
+                type: 'deployment',
+                position: { x, y: yDeploy },
+                data: { ...d, onChange: handleNodeDataChange },
+            });
+            x += 320;
+        });
+
+        // Map services
+        x = 100;
+        workflow.services?.forEach((s) => {
+            newNodes.push({
+                id: s.id,
+                type: 'service',
+                position: { x, y: yService },
+                data: { ...s, onChange: handleNodeDataChange },
+            });
+            x += 320;
+        });
+
+        // Map ingress
+        workflow.ingresses?.forEach((ing) => {
+            newNodes.push({
+                id: ing.id,
+                type: 'ingress',
+                position: { x, y: yDeploy },
+                data: { ...ing, onChange: handleNodeDataChange },
+            });
+            x += 320;
+        });
+
+        // Map configmaps
+        workflow.configmaps?.forEach((cm) => {
+            newNodes.push({
+                id: cm.id,
+                type: 'configmap',
+                position: { x, y: yService },
+                data: { ...cm, onChange: handleNodeDataChange },
+            });
+            x += 320;
+        });
+
+        setNodes(newNodes);
+
+        // Map edges
+        const newEdges: Edge[] = (workflow.edges || []).map((e, i) => ({
+            id: `ai-e-${i}`,
+            source: e.source_id,
+            target: e.target_id,
+            animated: true,
+            style: { stroke: 'var(--color-accent)', strokeWidth: 2 },
+        }));
+        setEdges(newEdges);
+    }, [handleNodeDataChange, setNodes, setEdges]);
+
     const handleBack = async () => {
         if (clusterId) {
             try { await connectionApi.disconnect(clusterId); } catch { /* ignore */ }
@@ -643,6 +714,16 @@ function WorkspaceCanvas() {
                             {statusMsg}
                         </span>
                     )}
+                    <button
+                        className="workspace-btn workspace-btn-ai"
+                        onClick={() => setAiPanelOpen((prev) => !prev)}
+                        title="AI Workflow Assistant"
+                        id="ai-panel-toggle-btn"
+                    >
+                        <IconSparkles size={16} />
+                        AI
+                    </button>
+                    <div className="workspace-toolbar-divider" />
                     <button
                         className="workspace-btn workspace-btn-delete-sel"
                         onClick={handleDeleteSelected}
@@ -729,6 +810,13 @@ function WorkspaceCanvas() {
                         />
                     </ReactFlow>
                 </div>
+
+                {/* AI Chat Panel */}
+                <AIChatPanel
+                    isOpen={aiPanelOpen}
+                    onClose={() => setAiPanelOpen(false)}
+                    onWorkflowGenerated={loadAIWorkflow}
+                />
             </div>
 
             {/* Config modal — shown when a node is double-clicked */}
