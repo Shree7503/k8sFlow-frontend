@@ -256,3 +256,10 @@ export const deploymentsApi = {
       params: { cluster_id: clusterId, namespace },
     }),
 };
+
+// ─── AI Chat ────────────────────────────────────────────────────
+export const aiApi = {
+  /** POST /ai/chat */
+  chat: (prompt: string) =>
+    axiosInstance.post(`${API}/ai/chat`, { prompt }),
+};
